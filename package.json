@@ -1,0 +1,32 @@
+{
+  
+  "dependencies": {
+  
+    
+  "pixi-viewport": "^6.0.3",
+  
+    
+  "pixi.js": "^8.7.2"
+  
+  },
+  
+  "devDependencies": {
+  
+    
+  "live-server": "^1.2.2",
+  
+    
+  "vite": "^6.0.11"
+  
+  },
+  
+  "scripts": {
+  
+    
+  "start": "live-server --port=3000",
+  
+    
+  "dev": "vite --host"
+  
+  }
+}
