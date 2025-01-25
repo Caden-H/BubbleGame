@@ -215,6 +215,18 @@ window.addEventListener('pointermove', (event) =>
     mousePos.y = event.y;
   });
 
+window.addEventListener("mousedown", (e) => {
+  if (e.button === 0 && States.PLAYING) {  // 0 is the left mouse button
+    keys[" "] = true;
+  }
+});
+
+window.addEventListener("mouseup", (e) => {
+  if (e.button === 0 && States.PLAYING) {
+    keys[" "] = false;
+  }
+});
+
 const upgradeManager = new UpgradeManager(app, GameState.Bubble, GameState.Player);
 
 viewport.addChild(upgradeManager.stationContainer);
