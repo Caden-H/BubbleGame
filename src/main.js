@@ -96,6 +96,7 @@ startButton.on("pointerdown", () => {
 await PIXI.Assets.load("raw-assets/images/bubble.svg");
 const bubble_sprite = PIXI.Sprite.from("raw-assets/images/bubble.svg");
 bubble_sprite.anchor.set(0.5);
+bubble_sprite.alpha = 0.5;
 viewport.addChild(bubble_sprite);
 
 // Player
@@ -254,7 +255,7 @@ upgradeManager.onClose = () => {
   mouse_needed = false;
 };
 
-bubble_sprite.zIndex = 0;
+bubble_sprite.zIndex = 4;
 upgradeManager.stationContainer.zIndex = 1;
 player_sprite.zIndex = 2;
 arm_sprite.zIndex = 3;
@@ -328,7 +329,6 @@ function gameLoop(delta) {
 
 
 function update(delta) {
-  console.log(delta.FPS)
   switch (currentState) {
     case States.INTRO:
       mouse_needed = true;
