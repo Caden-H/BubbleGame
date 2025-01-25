@@ -250,13 +250,20 @@ function gameLoop(delta) {
     const gamepads = navigator.getGamepads();
     const gp = gamepads[0];
     if (gp) {
-      // Left stick: axes[0], axes[1]
-      const leftStickX = gp.axes[0] || 0;
-      const leftStickY = gp.axes[1] || 0;
+      // Normalize button and axis mapping
+      const isStandardMapping = gp.mapping === "standard"; // "standard" mapping for most modern controllers
 
-      // Right stick: axes[2], axes[3]
-      const rightStickX = gp.axes[2] || 0;
-      const rightStickY = gp.axes[3] || 0;
+      // Left stick: axes[0], axes[1] for "standard"; fallback for non-standard
+      const leftStickX = isStandardMapping ? gp.axes[0] : gp.axes[0] || 0;
+      const leftStickY = isStandardMapping ? gp.axes[1] : gp.axes[1] || 0;
+
+      // Right stick: axes[2], axes[3] for "standard"; fallback for non-standard
+      const rightStickX = isStandardMapping ? gp.axes[2] : gp.axes[2] || 0;
+      const rightStickY = isStandardMapping ? gp.axes[3] : gp.axes[3] || 0;
+
+      // Buttons: A (Xbox) / Cross (PS) is buttons[0]; Right Trigger is buttons[7]
+      const buttonA = gp.buttons[0]?.pressed || false; // A on Xbox / Cross on PS
+      const buttonRT = gp.buttons[7]?.pressed || false; // Right Trigger
 
       // Dead zone function
       function applyDeadZone(ax, ay, deadZone = 0.1) {
@@ -274,17 +281,12 @@ function gameLoop(delta) {
       keys.gpRX = rx;
       keys.gpRY = ry;
 
-      // For dash with right trigger or "A" button:
-      // (Typically gp.buttons[0] = A, gp.buttons[7] = Right Trigger, etc.)
-      if (gp.buttons[7].pressed || gp.buttons[0].pressed) {
-        keys[" "] = true;
-      } else {
-        keys[" "] = false;
-      }
+      // Handle dash and restart button
+      keys[" "] = buttonA || buttonRT; // Dash with "A" (Xbox) or "Cross" (PS) or right trigger
 
-      // Check for restart input when GAMEOVER
-      if (currentState === States.GAMEOVER && gp.buttons[0].pressed) {
-        resetGame(); // Restart the game when "A" is pressed
+      // Restart game when in GAMEOVER state
+      if (currentState === States.GAMEOVER && buttonA) {
+        resetGame();
       }
     }
   } else {
@@ -305,6 +307,7 @@ function gameLoop(delta) {
   }
   render();
 }
+
 
 
 
