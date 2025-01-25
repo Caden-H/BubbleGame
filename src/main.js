@@ -111,12 +111,10 @@ const GameState = {
   Bubble: new Bubble(bubble_sprite),
 };
 
-const enemyTexture = await PIXI.Assets.load("raw-assets/images/fish-svgrepo-com.svg");
 const enemyTexture1 = await PIXI.Assets.load("raw-assets/images/Fish1.svg");
 const enemyTexture2 = await PIXI.Assets.load("raw-assets/images/Fish2.svg");
 const enemyTexture3 = await PIXI.Assets.load("raw-assets/images/Fish3.svg");
 const enemySpawner = new EnemySpawner(app, viewport, GameState.Bubble, GameState.Player);
-enemySpawner.enemyTexture = enemyTexture;
 enemySpawner.enemyTexture1 = enemyTexture1;
 enemySpawner.enemyTexture2 = enemyTexture2;
 enemySpawner.enemyTexture3 = enemyTexture3;
@@ -227,7 +225,12 @@ window.addEventListener("mouseup", (e) => {
   }
 });
 
-const upgradeManager = new UpgradeManager(app, GameState.Bubble, GameState.Player);
+await PIXI.Assets.load("raw-assets/images/tree.svg");
+const upgrade_sprite = PIXI.Sprite.from("raw-assets/images/tree.svg");
+upgrade_sprite.anchor.set(0.5);
+viewport.addChild(bubble_sprite);
+
+const upgradeManager = new UpgradeManager(app, GameState.Bubble, GameState.Player, upgrade_sprite);
 viewport.addChild(upgradeManager.stationContainer);
 app.stage.addChild(upgradeManager.menuContainer);
 

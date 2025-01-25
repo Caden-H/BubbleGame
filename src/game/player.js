@@ -9,6 +9,19 @@ export class Player {
     this.reset();
     this.viewport = viewport;
     this.particles = [];
+
+    this.dash_audios = [];
+    for (let i = 1; i <= 4; i++) {
+      const dashAud = new Audio(`raw-assets/audio/dash${i}.wav`);
+      dashAud.volume = 0.2;
+      this.dash_audios.push(dashAud);
+    }
+    this.combo_audios = [];
+    for (let i = 1; i <= 4; i++) {
+      const comboAud = new Audio(`raw-assets/audio/combo${i}.wav`);
+      comboAud.volume = 1;
+      this.combo_audios.push(comboAud);
+    }
   }
 
   reset() {
@@ -29,6 +42,7 @@ export class Player {
     this.dash_cooldown = 0.5; // seconds
     this.dash_cost = 1;
     this.dash_damage = 1;
+    this.dash_combo = 0;
 
     this.dash_speed = (2 * this.dash_length) / this.dash_cooldown;
     this.current_dash_cooldown = 0;
@@ -157,6 +171,22 @@ export class Player {
   }
 
   startDash(mousePos, keys) {
+    if (this.dashing) {
+      this.dash_combo += 1;
+    } else {
+      this.dash_combo = 0;
+    }
+    const randomIndex = Math.floor(Math.random() * this.dash_audios.length);
+    const randomAudio = this.dash_audios[randomIndex];
+    randomAudio.currentTime = 0;
+    randomAudio.play();
+    if (this.dash_combo > 0 ) {
+      const comboIndex = Math.min(this.dash_combo - 1, 3);
+      const comboAudio = this.combo_audios[comboIndex];
+      comboAudio.currentTime = 0;
+      comboAudio.play();
+  }
+
     this.dashing = true;
     this.current_dash_cooldown = this.dash_cooldown;
 
