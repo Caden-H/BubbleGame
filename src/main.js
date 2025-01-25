@@ -7,16 +7,13 @@ var screenWidth = window.innerWidth;
 var screenHeight = window.innerHeight;
 
 const app = new PIXI.Application();
-await app.init({ background: '#1099bb', resizeTo: window });
+await app.init({ background: "#1099bb", resizeTo: window });
 document.body.appendChild(app.canvas);
 
 // // Load a texture and create a sprite
 // await PIXI.Assets.load("sample.png");
 // const sprite = PIXI.Sprite.from("sample.png");
 // app.stage.addChild(sprite);
-
-
-
 
 // create viewport
 const viewport = new pixi_viewport.Viewport({
@@ -26,8 +23,6 @@ const viewport = new pixi_viewport.Viewport({
   worldHeight: screenHeight,
   events: app.renderer.events, // the interaction module is important for wheel to work properly when renderer.view is placed or scaled
 });
-
-
 
 // add the viewport to the stage
 app.stage.addChild(viewport);
@@ -58,13 +53,25 @@ triangle.fill();
 viewport.addChild(triangle);
 
 
+await PIXI.Assets.load("sample.png");
+const sprite = PIXI.Sprite.from("sample.png");
+app.stage.addChild(sprite);
+
 
 // move the viewport to center on the circle
 viewport.moveCenter(circle);
 
 // move the viewport with the arrow keys
 
+let keys = {};
 
+window.addEventListener("keydown", (event) => {
+  keys[event.key] = true;
+});
+
+window.addEventListener("keyup", (event) => {
+  keys[event.key] = false;
+});
 
 // Game loop
 function gameLoop(delta) {
@@ -78,11 +85,35 @@ function gameLoop(delta) {
 // Update function to handle game logic
 function update(delta) {
   // Update game objects, handle input, etc.
+  // log a tick to the console
+  // console.log("Tick:", delta);
+
+  // move the circle back and forth
+
+  circle.x = 100 * Math.sin(app.ticker.lastTime / 1000);
+
+  const speed = 5;
+  if (keys["w"] || keys["W"]) {
+    triangle.y -= speed;
+  }
+  if (keys["s"] || keys["S"]) {
+    triangle.y += speed;
+  }
+  if (keys["a"] || keys["A"]) {
+    triangle.x -= speed;
+  }
+  if (keys["d"] || keys["D"]) {
+    triangle.x += speed;
+  }
 }
 
 // Render function to handle drawing
 function render() {
   // Draw game objects, update viewport, etc.
+
+  // Example: Clear the screen and redraw the circle
+  viewport.moveCenter(triangle);
+  app.renderer.render(app.stage);
 }
 
 // Start the game loop

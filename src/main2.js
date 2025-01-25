@@ -7,20 +7,13 @@ var screenWidth = window.innerWidth;
 var screenHeight = window.innerHeight;
 
 const app = new PIXI.Application();
-await app.init({ background: '#1099bb', resizeTo: window });
+await app.init({ background: "#1099bb", resizeTo: window });
 document.body.appendChild(app.canvas);
 
 // // Load a texture and create a sprite
 // await PIXI.Assets.load("sample.png");
 // const sprite = PIXI.Sprite.from("sample.png");
 // app.stage.addChild(sprite);
-
-// // Move the sprite back and forth
-// let elapsed = 0.0;
-// app.ticker.add((ticker) => {
-//   elapsed += ticker.deltaTime;
-//   sprite.x = 100.0 + Math.cos(elapsed / 50.0) * 100.0;
-// });
 
 // create viewport
 const viewport = new pixi_viewport.Viewport({
@@ -30,8 +23,6 @@ const viewport = new pixi_viewport.Viewport({
   worldHeight: screenHeight,
   events: app.renderer.events, // the interaction module is important for wheel to work properly when renderer.view is placed or scaled
 });
-
-
 
 // add the viewport to the stage
 app.stage.addChild(viewport);
@@ -61,8 +52,6 @@ triangle.closePath();
 triangle.fill();
 viewport.addChild(triangle);
 
-
-
 // move the viewport to center on the circle
 viewport.moveCenter(circle);
 
@@ -78,35 +67,6 @@ window.addEventListener("keyup", (event) => {
   keys[event.key] = false;
 });
 
-app.ticker.add(() => {
-  if (keys["ArrowUp"]) {
-    viewport.y += 10;
-  }
-  if (keys["ArrowDown"]) {
-    viewport.y -= 10;
-  }
-  if (keys["ArrowLeft"]) {
-    viewport.x += 10;
-  }
-  if (keys["ArrowRight"]) {
-    viewport.x -= 10;
-  }
-});
-
-// zoom in and out the viewport with 1 and 2 keys
-window.addEventListener("keydown", (event) => {
-  if (event.key === "1") {
-    viewport.scale.x *= 1.1;
-    viewport.scale.y *= 1.1;
-  }
-  if (event.key === "2") {
-    viewport.scale.x /= 1.1;
-    viewport.scale.y /= 1.1;
-  }
-});
-
-
-
 // Game loop
 function gameLoop(delta) {
   // Update game state
@@ -119,11 +79,35 @@ function gameLoop(delta) {
 // Update function to handle game logic
 function update(delta) {
   // Update game objects, handle input, etc.
+  // log a tick to the console
+  // console.log("Tick:", delta);
+
+  // move the circle back and forth
+
+  circle.x = 100 * Math.sin(app.ticker.lastTime / 1000);
+
+  const speed = 5;
+  if (keys["w"] || keys["W"]) {
+    triangle.y -= speed;
+  }
+  if (keys["s"] || keys["S"]) {
+    triangle.y += speed;
+  }
+  if (keys["a"] || keys["A"]) {
+    triangle.x -= speed;
+  }
+  if (keys["d"] || keys["D"]) {
+    triangle.x += speed;
+  }
 }
 
 // Render function to handle drawing
 function render() {
   // Draw game objects, update viewport, etc.
+
+  // Example: Clear the screen and redraw the circle
+  viewport.moveCenter(triangle);
+  app.renderer.render(app.stage);
 }
 
 // Start the game loop
