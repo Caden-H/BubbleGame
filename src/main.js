@@ -18,7 +18,7 @@ var screenWidth = window.innerWidth;
 var screenHeight = window.innerHeight;
 
 const app = new PIXI.Application();
-await app.init({ background: "#1099bb", resizeTo: window });
+await app.init({ background: "#60BFE0", resizeTo: window });
 document.body.appendChild(app.canvas);
 
 // Create viewport
