@@ -10,3 +10,7 @@ npm start
 npm install --save-dev vite
 
 npm i pixi-viewport
+
+
+https://pixijs.com/8.x/guides/basics/getting-started
+https://github.com/pixi-viewport/pixi-viewport

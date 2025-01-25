@@ -2,6 +2,9 @@
 import * as PIXI from "pixi.js";
 import * as pixi_viewport from "pixi-viewport";
 
+import { Player } from "./game/player.js";
+import { Bubble } from "./game/bubble.js";
+
 // set screen width and height variables to the window size
 var screenWidth = window.innerWidth;
 var screenHeight = window.innerHeight;
@@ -9,11 +12,6 @@ var screenHeight = window.innerHeight;
 const app = new PIXI.Application();
 await app.init({ background: "#1099bb", resizeTo: window });
 document.body.appendChild(app.canvas);
-
-// // Load a texture and create a sprite
-// await PIXI.Assets.load("sample.png");
-// const sprite = PIXI.Sprite.from("sample.png");
-// app.stage.addChild(sprite);
 
 // create viewport
 const viewport = new pixi_viewport.Viewport({
@@ -30,36 +28,37 @@ app.stage.addChild(viewport);
 // activate plugins
 viewport.drag().pinch().wheel().decelerate();
 
-// const sprite2 = viewport.addChild(new PIXI.Sprite(PIXI.Texture.WHITE));
-// sprite2.tint = 0xff0000;
-// sprite2.width = sprite2.height = 100;
-// sprite2.position.set(100, 100);
-
 // add a blue circle in the center of the view
-const circle = new PIXI.Graphics();
-circle.fill(0x0000ff);
-circle.circle(0, 0, 50);
-circle.fill();
-viewport.addChild(circle);
+const bubble_sprite = new PIXI.Graphics();
+bubble_sprite.fill(0xADD8E6);
+bubble_sprite.circle(0, 0, 50);
+bubble_sprite.fill();
+viewport.addChild(bubble_sprite);
 
-// add a triangle on the screen
-const triangle = new PIXI.Graphics();
-triangle.fill(0xff0000);
-triangle.moveTo(0, -50);
-triangle.lineTo(50, 50);
-triangle.lineTo(-50, 50);
-triangle.closePath();
-triangle.fill();
-viewport.addChild(triangle);
+// Create player sprite
+await PIXI.Assets.load("raw-assets/images/Black_triangle.svg");
+const player_sprite = PIXI.Sprite.from("raw-assets/images/Black_triangle.svg");
+player_sprite.anchor.set(0.5); // Set the anchor to the center of the sprite
+viewport.addChild(player_sprite);
 
 
-await PIXI.Assets.load("sample.png");
-const sprite = PIXI.Sprite.from("sample.png");
-app.stage.addChild(sprite);
+
+const GameState = {
+  score: 0,
+  level: 1,
+  Player: new Player(player_sprite),
+  Bubble: new Bubble(bubble_sprite),
+  enemies: [],
+  bullets: [],
+  // Add more properties as needed
+};
+
+console.log(GameState.Player.x);
+
 
 
 // move the viewport to center on the circle
-viewport.moveCenter(circle);
+viewport.moveCenter(bubble_sprite);
 
 // move the viewport with the arrow keys
 
@@ -88,22 +87,55 @@ function update(delta) {
   // log a tick to the console
   // console.log("Tick:", delta);
 
-  // move the circle back and forth
+  // make the circle grow and shrink over time
+  GameState.Bubble.BubbleSprite.scale.x = 3.5 + 0.5 * Math.sin(Date.now() * 0.001);
+  GameState.Bubble.BubbleSprite.scale.y = 3.5 + 0.5 * Math.sin(Date.now() * 0.001);
 
-  circle.x = 100 * Math.sin(app.ticker.lastTime / 1000);
 
+  // Movement speed
   const speed = 5;
+
+  // Each frame, figure out the net direction of movement
+  let dx = 0;
+  let dy = 0;
+
   if (keys["w"] || keys["W"]) {
-    triangle.y -= speed;
+    dy -= 1;
   }
   if (keys["s"] || keys["S"]) {
-    triangle.y += speed;
+    dy += 1;
   }
   if (keys["a"] || keys["A"]) {
-    triangle.x -= speed;
+    dx -= 1;
   }
   if (keys["d"] || keys["D"]) {
-    triangle.x += speed;
+    dx += 1;
+  }
+
+  // Normalize diagonal speed (optional)
+  // This step ensures moving diagonally isn’t “faster” than cardinal directions
+  // but in many games people just skip this. If you want it smooth, do this:
+  if (dx !== 0 || dy !== 0) {
+    // Compute magnitude
+    const mag = Math.sqrt(dx * dx + dy * dy);
+    dx /= mag;
+    dy /= mag;
+  }
+
+  // Now move the sprite
+  GameState.Player.PlayerSprite.x += dx * speed;
+  GameState.Player.PlayerSprite.y += dy * speed;
+
+  // Rotate the sprite if we’re actually moving
+  // (i.e., dx or dy is non-zero)
+  if (dx !== 0 || dy !== 0) {
+    // Compute the angle in radians
+    // atan2(Y, X) => 0 rad is “facing right,” angles go CCW
+    const angle = Math.atan2(dy, dx);
+    
+    // If your sprite texture points “up” at 0 radians, subtract π/2
+    // If it’s already aligned to the right, you can skip the offset
+    GameState.Player.PlayerSprite.rotation = angle - Math.PI / 2;
   }
 }
 
@@ -111,9 +143,8 @@ function update(delta) {
 function render() {
   // Draw game objects, update viewport, etc.
 
-  // Example: Clear the screen and redraw the circle
-  viewport.moveCenter(triangle);
-  app.renderer.render(app.stage);
+  viewport.moveCenter(GameState.Player.PlayerSprite);
+  // app.renderer.render(app.stage);
 }
 
 // Start the game loop
