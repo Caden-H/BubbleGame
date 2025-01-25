@@ -22,10 +22,12 @@ export class Player {
     this.dash_length = 150;
     this.dash_cooldown = 1/2; // seconds
     this.dash_cost = 1;
+    this.dash_damage = 1;
 
     this.dash_speed = (2 * this.dash_length) / this.dash_cooldown;
     this.current_dash_cooldown = 0
     this.dashing = false;
+    this.dash_cancelable = false;
     this.dash_dir_x = 0;
     this.dash_dir_y = 0;
 
@@ -47,7 +49,7 @@ export class Player {
     } else {
       speed = this.water_speed
     }
-    if (this.dashing == false) {
+    if (this.dashing == false || this.dash_cancelable) {
       this.dx = 0;
       this.dy = 0;
       
@@ -80,6 +82,8 @@ export class Player {
 
       if (keys[" "]) {
         this.startDash(mousePos);
+      } else if (this.dashing) {
+        this.updateDash(delta)
       }
     }
     else {
@@ -90,7 +94,12 @@ export class Player {
   startDash(mousePos) {
     this.dashing = true;
     this.current_dash_cooldown = this.dash_cooldown;
-    this.oxygen -= this.dash_cost;
+    if (this.dash_cancelable) {
+      this.oxygen -= this.dash_cost / 2
+    } else {
+      this.oxygen -= this.dash_cost;
+    }
+    this.dash_cancelable = false;
 
     const playerPos = this.PlayerSprite.getGlobalPosition();
     let dx = mousePos.x - playerPos.x;
@@ -118,6 +127,7 @@ export class Player {
 
     if (this.current_dash_cooldown <= 0) {
       this.dashing = false;
+      this.dash_cancelable = false;
       this.current_dash_cooldown = 0;
     }
   }

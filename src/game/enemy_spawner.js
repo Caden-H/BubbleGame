@@ -22,13 +22,18 @@ export class EnemySpawner {
 
       this.spawnTimer = 0;
       this.spawnInterval = 60;
+      this.total_frames = 0;
   }
 
   update(delta) {
     this.spawnTimer += delta.deltaTime;
+    this.total_frames += delta.deltaTime;
     if (this.spawnTimer >= this.spawnInterval) {
       this.spawnTimer = 0;
-      this.spawnEnemy();
+      let damage = Math.ceil(this.total_frames / 3600)
+      let oxygen = Math.ceil(this.total_frames / 3600)
+      let health = Math.ceil(this.total_frames / 3600)
+      this.spawnEnemy(damage, oxygen, health);
     }
 
     for (let i = this.enemies.length - 1; i >= 0; i--) {
@@ -48,7 +53,7 @@ export class EnemySpawner {
     }
   }
 
-  spawnEnemy() {
+  spawnEnemy(damage, oxygen, health) {
     // pick random side: 0=top,1=right,2=bottom,3=left
     const side = Math.floor(Math.random() * 4);
 
@@ -77,7 +82,7 @@ export class EnemySpawner {
     }
 
     // Create new enemy
-    const enemy = new Enemy(this.enemyTexture, x, y);
+    const enemy = new Enemy(this.enemyTexture, x, y, damage, oxygen, health);
     this.viewport.addChild(enemy.sprite);
     this.enemies.push(enemy);
   }
@@ -97,8 +102,12 @@ export class EnemySpawner {
 
     if (dist <= collisionRadius) {
       // "Kill" the enemy
-      enemy.dead = true;
-      this.player.oxygen = Math.min(this.player.oxygen + enemy.oxygen, this.player.max_oxygen)
+      enemy.health -= this.player.dash_damage;
+      if (enemy.health <= 0) {
+        enemy.dead = true;
+        this.player.dash_cancelable = true;
+        this.player.oxygen = Math.min(this.player.oxygen + enemy.oxygen, this.player.max_oxygen)
+      }
 
       // Optionally let the player restore some oxygen or something:
       // this.player.currentO2 = Math.min(this.player.currentO2 + 5, this.player.maxO2);

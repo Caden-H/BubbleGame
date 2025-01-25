@@ -6,6 +6,7 @@ import { Player } from "./game/player.js";
 import { Bubble } from "./game/bubble.js";
 import { EnemySpawner } from "./game/enemy_spawner.js";
 import { OxygenUI } from "./game/oxygen_ui.js";
+import { UpgradeManager } from "./game/upgrades.js";
 
 const States = {
   INTRO: "intro",
@@ -31,6 +32,7 @@ const viewport = new pixi_viewport.Viewport({
   worldHeight: screenHeight,
   events: app.renderer.events,
 });
+viewport.sortableChildren = true;
 viewport.drag().pinch().wheel().decelerate();
 
 const introContainer = new PIXI.Container();
@@ -99,7 +101,6 @@ bubble_sprite.fill(0xADD8E6);
 bubble_sprite.circle(0, 0, 10);
 bubble_sprite.fill();
 viewport.addChild(bubble_sprite);
-console.log(bubble_sprite)
 
 
 // Create player sprite
@@ -107,7 +108,6 @@ await PIXI.Assets.load("raw-assets/images/Black_triangle.svg");
 const player_sprite = PIXI.Sprite.from("raw-assets/images/Black_triangle.svg");
 player_sprite.anchor.set(0.5); // Set the anchor to the center of the sprite
 viewport.addChild(player_sprite);
-console.log(player_sprite)
 
 let oxygen_ui;
 
@@ -215,8 +215,29 @@ window.addEventListener('pointermove', (event) =>
     mousePos.y = event.y;
   });
 
+const upgradeManager = new UpgradeManager(app, GameState.Bubble, GameState.Player);
+
+viewport.addChild(upgradeManager.stationContainer);
+app.stage.addChild(upgradeManager.menuContainer);
+
+let paused = false;
+
+upgradeManager.onOpen = () => {
+  paused = true;
+};
+upgradeManager.onClose = () => {
+  paused = false;
+};
+
+bubble_sprite.zIndex = 0;
+upgradeManager.stationContainer.zIndex = 1;
+player_sprite.zIndex = 2;
+viewport.sortChildren()
+
 function gameLoop(delta) {
-  update(delta);
+  if (!paused) {
+    update(delta);
+  }
   render();
 }
 
@@ -239,6 +260,9 @@ function update(delta) {
       // enemies
       enemySpawner.update(delta);
 
+      // upgrades
+      upgradeManager.update(delta, keys, oxygen_ui);
+
       // UI
       oxygen_ui.update(GameState.Player, GameState.Bubble);
 
@@ -251,6 +275,7 @@ function update(delta) {
       waterVolume = Math.max(0, Math.min(1, waterVolume));
       bubbleAudio.volume = bubbleVolume;
       waterAudio.volume = waterVolume;
+
 
       // check lose condition
       if (GameState.Bubble.oxygen <= 0 || GameState.Player.oxygen <= 0) {
@@ -303,6 +328,7 @@ function resetGame() {
   GameState.Bubble.reset();
   GameState.Player.reset();
   enemySpawner.reset();
+  upgradeManager.reset();
 
   bubbleVolume = 1.0;
   waterVolume = 0.0;

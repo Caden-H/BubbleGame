@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 
 export class Enemy {
-  constructor(texture, startX, startY) {
+  constructor(texture, startX, startY, damage, oxygen, health) {
     this.sprite = new PIXI.Sprite(texture);
     this.sprite.anchor.set(0.5);
     this.sprite.scale = 0.1;
@@ -9,8 +9,9 @@ export class Enemy {
     this.sprite.y = startY;
 
     this.speed = 1;
-    this.damagePerSecond = 0.1;
-    this.oxygen = 1;
+    this.oxygen = oxygen;
+    this.damage = damage;
+    this.health = health;
 
     this.dead = false;
   }
@@ -41,7 +42,7 @@ export class Enemy {
     }
 
     if (dist <= bubble.radius) {
-      bubble.change_oxygen(-this.damagePerSecond * delta.deltaTime);
+      bubble.change_oxygen(Math.min(-this.damage * delta.deltaTime / 60 - bubble.defense, 0));
     }
   }
 }

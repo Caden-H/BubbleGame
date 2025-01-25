@@ -11,6 +11,7 @@ export class Bubble {
     this.oxygen_rate = 0.1;
     this.base_radius = 10
     this.radius = 10;
+    this.defense = 0;
   }
 
   get_position() {
