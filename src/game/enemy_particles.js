@@ -48,7 +48,6 @@ class EnemyParticle {
         const speedFactor = this.speed * (this.lifetime / this.maxLifetime);
         this.sprite.x += Math.cos(angle) * delta.deltaTime * speedFactor;
         this.sprite.y += Math.sin(angle) * delta.deltaTime * speedFactor;
-        console.log(delta.deltaTime)
 
         this.lifetime -= delta.deltaTime;
         // if the particle has faded out, destroy it

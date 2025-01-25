@@ -328,6 +328,7 @@ function gameLoop(delta) {
 
 
 function update(delta) {
+  console.log(delta.FPS)
   switch (currentState) {
     case States.INTRO:
       mouse_needed = true;
