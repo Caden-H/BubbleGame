@@ -31,8 +31,10 @@ class Upgrade {
  * "buttonBg.fill(...)" code & "new PIXI.Text({ text: ..., style: ... })" lines.
  */
 export class UpgradeManager {
-  constructor(app, bubble, player) {
+  constructor(app, bubble, player, sprite) {
     this.app = app;
+    this.sprite = sprite;
+    this.sprite.scale = 0.5;
     this.bubble = bubble;
     this.player = player;
     this.oxygen_ui = null;
@@ -42,12 +44,7 @@ export class UpgradeManager {
     //////////////////////////////////////////////////////////////////
     this.stationContainer = new PIXI.Container();
 
-    const stationGraphic = new PIXI.Graphics();
-    // Your previous style for the station (brown):
-    stationGraphic.fill(0x8B4513);
-    stationGraphic.rect(-15, -15, 30, 30);
-    stationGraphic.fill();
-    this.stationContainer.addChild(stationGraphic);
+    this.stationContainer.addChild(sprite);
 
     // Optional station label
     const stationStyle = new PIXI.TextStyle({

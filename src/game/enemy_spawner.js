@@ -7,7 +7,6 @@ export class EnemySpawner {
     this.viewport = viewport;
     this.bubble = bubble;
     this.player = player;
-    this.enemyTexture = PIXI.Texture.WHITE; // placeholder
     this.enemyTexture1 = PIXI.Texture.WHITE; // placeholder
     this.enemyTexture2 = PIXI.Texture.WHITE; // placeholder
     this.enemyTexture3 = PIXI.Texture.WHITE; // placeholder
