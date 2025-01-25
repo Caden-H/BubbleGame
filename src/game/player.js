@@ -20,8 +20,10 @@ export class Player {
 
     this.in_bubble = true;
 
-    this.dx = 0;
-    this.dy = 0;
+    this.dx_key = 0;
+    this.dx_conch = 0;
+    this.dy_key = 0;
+    this.dy_conch = 0;
 
     this.dash_length = 150;
     this.dash_cooldown = 0.5; // seconds
@@ -56,31 +58,46 @@ export class Player {
     // If we're not in a dash or it's cancelable, we can move normally
     if (!this.dashing || this.dash_cancelable) {
       // Reset dx, dy
-      this.dx = 0;
-      this.dy = 0;
+      this.dx_key = 0;
+      this.dx_conch = 0;
+      this.dy_key = 0;
+      this.dy_conch = 0;
 
       // Keyboard
-      if (keys["w"]) this.dy = -1;
-      if (keys["s"]) this.dy = +1;
-      if (keys["a"]) this.dx = -1;
-      if (keys["d"]) this.dx = +1;
+      if (keys["w"]) this.dy_key = -1;
+      if (keys["s"]) this.dy_key = +1;
+      if (keys["a"]) this.dx_key = -1;
+      if (keys["d"]) this.dx_key = +1;
+      
+      // Normalize (dx, dy) for keys if we have any movement
+      if (this.dx_key !== 0 || this.dy_key !== 0) {
+        const mag = Math.sqrt(this.dx_key * this.dx_key + this.dy_key * this.dy_key);
+        this.dx_key /= mag;
+        this.dy_key /= mag;
+      }
 
       // Controller left stick
       const gpX = keys.gpX || 0;
       const gpY = keys.gpY || 0;
-      this.dx += gpX;
-      this.dy += gpY;
+      this.dx_conch += gpX;
+      this.dy_conch += gpY;
 
-      // Normalize (dx, dy) if we have any movement
-      if (this.dx !== 0 || this.dy !== 0) {
-        const mag = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
-        this.dx /= mag;
-        this.dy /= mag;
+      // Normalize (dx, dy) for conch if we have any movement
+      if (this.dx_conch !== 0 || this.dy_conch !== 0) {
+        const mag = Math.sqrt(this.dx_conch * this.dx_conch + this.dy_conch * this.dy_conch);
+        this.dx_conch /= mag;
+        this.dy_conch /= mag;
       }
 
       // Apply movement
-      this.PlayerSprite.x += this.dx * speed * delta.elapsedMS / 1000;
-      this.PlayerSprite.y += this.dy * speed * delta.elapsedMS / 1000;
+      if (this.dx_conch != 0 || this.dy_conch != 0) {
+        this.PlayerSprite.x += this.dx_conch * speed * delta.elapsedMS / 1000;
+        this.PlayerSprite.y += this.dy_conch * speed * delta.elapsedMS / 1000;
+
+      } else {
+        this.PlayerSprite.x += this.dx_key * speed * delta.elapsedMS / 1000;
+        this.PlayerSprite.y += this.dy_key * speed * delta.elapsedMS / 1000;
+      }
 
       // === Rotation (facing) ===
       // If the right stick is tilted, face that direction. 
@@ -92,9 +109,13 @@ export class Player {
       if (magR > 0.01) {
         // Right stick aiming
         this.PlayerSprite.rotation = Math.atan2(ry, rx) - Math.PI / 2;
-      } else if (!this.dashing && (this.dx !== 0 || this.dy !== 0)) {
-        // Face direction of movement
-        const angle = Math.atan2(this.dy, this.dx);
+      } else if (!this.dashing && (this.dx_conch !== 0 || this.dy_conch !== 0)) {
+        // Face direction of conch movement
+        const angle = Math.atan2(this.dy_conch, this.dx_conch);
+        this.PlayerSprite.rotation = angle - Math.PI / 2;
+      } else if (!this.dashing && (this.dx_key !== 0 || this.dy_key !== 0)) {
+        // Face direction of key movement
+        const angle = Math.atan2(this.dy_key, this.dx_key);
         this.PlayerSprite.rotation = angle - Math.PI / 2;
       }
 
@@ -162,12 +183,12 @@ export class Player {
       dashX = rx / magR;
       dashY = ry / magR;
     } else {
-      // If there's a movement vector from left stick or WASD
-      const moveMag = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+      // If there's a movement vector from left stick
+      const moveMag = Math.sqrt(this.dx_conch * this.dx_conch + this.dy_conch * this.dy_conch);
       if (moveMag > 0.01) {
         // Dash in the direction we're moving/facing
-        dashX = this.dx;
-        dashY = this.dy;
+        dashX = this.dx_conch;
+        dashY = this.dy_conch;
       } else {
         // Fallback to mouse aim
         // (Remove this if you want 100% ignore of mouse when a controller is connected)
