@@ -41,8 +41,8 @@ export class EnemySpawner {
       const enemy = this.enemies[i];
       if (enemy.dead) {
         this.viewport.removeChild(enemy.sprite);
-        enemy.sprite.destroy();
         this.enemies.splice(i, 1);
+        enemy.kill();
         continue;
       }
 
@@ -105,7 +105,7 @@ export class EnemySpawner {
       // "Kill" the enemy
       enemy.health -= this.player.dash_damage;
       if (enemy.health <= 0) {
-        enemy.dead = true;
+        enemy.kill();
         this.player.dash_cancelable = true;
         this.player.oxygen = Math.min(this.player.oxygen + enemy.oxygen, this.player.max_oxygen)
       }
