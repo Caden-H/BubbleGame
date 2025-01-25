@@ -28,6 +28,7 @@ export class Player {
     this.current_dash_cooldown = 0
     this.dashing = false;
     this.dash_cancelable = false;
+    this.released_space = false;
     this.dash_dir_x = 0;
     this.dash_dir_y = 0;
 
@@ -80,7 +81,10 @@ export class Player {
         this.PlayerSprite.rotation = angle - Math.PI / 2;
       }
 
-      if (keys[" "]) {
+      if (!keys[" "]) {
+        this.released_space = true
+      }
+      if ((keys[" "] && this.released_space && this.dash_cancelable) || (keys[" "] && !this.dash_cancelable)) {
         this.startDash(mousePos);
       } else if (this.dashing) {
         this.updateDash(delta)
@@ -93,6 +97,7 @@ export class Player {
 
   startDash(mousePos) {
     this.dashing = true;
+    this.released_space = false;
     this.current_dash_cooldown = this.dash_cooldown;
     if (this.dash_cancelable) {
       this.oxygen -= this.dash_cost / 2

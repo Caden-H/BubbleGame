@@ -21,18 +21,19 @@ export class EnemySpawner {
       this.enemies = [];
 
       this.spawnTimer = 0;
-      this.spawnInterval = 60;
-      this.total_frames = 0;
+      this.spawnInterval = 1; // in seconds
+      this.total_seconds = 0;
   }
 
   update(delta) {
-    this.spawnTimer += delta.deltaTime;
-    this.total_frames += delta.deltaTime;
+    this.spawnTimer += delta.deltaTime / 60;
+    this.total_seconds += delta.deltaTime / 60;
+    this.spawnInterval = 0.9 ** Math.floor(this.total_seconds / 30)
     if (this.spawnTimer >= this.spawnInterval) {
       this.spawnTimer = 0;
-      let damage = Math.ceil(this.total_frames / 3600)
-      let oxygen = Math.ceil(this.total_frames / 3600)
-      let health = Math.ceil(this.total_frames / 3600)
+      let damage = Math.ceil(this.total_seconds / 60)
+      let oxygen = Math.ceil(this.total_seconds / 60)
+      let health = Math.ceil(this.total_seconds / 60)
       this.spawnEnemy(damage, oxygen, health);
     }
 

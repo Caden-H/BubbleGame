@@ -223,9 +223,13 @@ app.stage.addChild(upgradeManager.menuContainer);
 let paused = false;
 
 upgradeManager.onOpen = () => {
+  bubbleAudio.volume = 0.5
+  waterAudio.volume = 0
   paused = true;
 };
 upgradeManager.onClose = () => {
+  bubbleAudio.volume = 1
+  waterAudio.volume = 0
   paused = false;
 };
 
