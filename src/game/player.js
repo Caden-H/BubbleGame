@@ -3,15 +3,24 @@ export class Player {
   constructor(PlayerSprite) {
     this.PlayerSprite = PlayerSprite;
     this.PlayerSprite.scale = 0.1;
-    this.bubble_speed = 5;
-    this.water_speed = 1;
+    this.reset()
+
+  }
+
+  reset() {
+    this.PlayerSprite.x = 0;
+    this.PlayerSprite.y = 0;
+    
+    this.bubble_speed = 300; // per second
+    this.water_speed = 60; // per second
+
     this.in_bubble = true;
 
     this.dx = 0;
     this.dy = 0;
 
-    this.dash_length = 200;
-    this.dash_cooldown = 1/4; // seconds
+    this.dash_length = 150;
+    this.dash_cooldown = 1/2; // seconds
     this.dash_cost = 1;
 
     this.dash_speed = (2 * this.dash_length) / this.dash_cooldown;
@@ -23,7 +32,7 @@ export class Player {
     this.oxygen = 10;
     this.max_oxygen = 20;
     this.oxygen_transfer_rate = 1; // per second
-    this.oxygen_use_rate = 0.1; // per second
+    this.oxygen_use_rate = 2; // per second
   }
 
   get_position() {
@@ -61,8 +70,8 @@ export class Player {
         this.dy /= mag;
       }
 
-      this.PlayerSprite.x += this.dx * speed * delta.deltaTime;
-      this.PlayerSprite.y += this.dy * speed * delta.deltaTime;
+      this.PlayerSprite.x += this.dx * speed * delta.deltaTime / 60;
+      this.PlayerSprite.y += this.dy * speed * delta.deltaTime / 60;
 
       if (this.dx !== 0 || this.dy !== 0) {
         const angle = Math.atan2(this.dy, this.dx);

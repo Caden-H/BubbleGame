@@ -30,7 +30,7 @@ export class OxygenUI {
           fill: "#ffffff",
           stroke: "#000000",
         });
-        this.bubbleO2Text = new PIXI.Text({text: "Oxygen: 100", style});
+        this.bubbleO2Text = new PIXI.Text({text: "Oxygen: 100", style: style});
         this.bubbleO2Text.x = screenWidth - 200;
         this.bubbleO2Text.y = 20;
         app.stage.addChild(this.bubbleO2Text);

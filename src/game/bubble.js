@@ -1,6 +1,12 @@
 export class Bubble {
   constructor(BubbleSprite) {
     this.BubbleSprite = BubbleSprite;
+    this.reset()
+  }
+
+  reset() {
+    this.BubbleSprite.x = 0;
+    this.BubbleSprite.y = 0;
     this.oxygen = 100;
     this.oxygen_rate = 0.1;
     this.base_radius = 10

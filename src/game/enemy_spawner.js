@@ -1,43 +1,36 @@
 import * as PIXI from "pixi.js";
 import { Enemy } from "./enemy.js";
 
-/**
- * This class is responsible for:
- *  - Periodically spawning enemies offscreen
- *  - Updating all enemies (so they move & damage the bubble)
- *  - Checking if the player is dashing and killing enemies on collision
- */
 export class EnemySpawner {
   constructor(app, viewport, bubble, player) {
     this.app = app;
     this.viewport = viewport;
-    this.bubble = bubble; // reference to your Bubble instance
-    this.player = player; // reference to your Player instance
-
-    // You need an enemy texture or image. You can load something like:
-    //   await PIXI.Assets.load("raw-assets/images/enemy.png");
-    // or pass it from outside. For a placeholder, you can generate a basic graphic or re-use an existing texture.
-    this.enemyTexture = PIXI.Texture.WHITE; // Just a white square placeholder
+    this.bubble = bubble;
+    this.player = player;
+    this.enemyTexture = PIXI.Texture.WHITE; // placeholder
 
     this.enemies = [];
+    this.reset()
+  }
 
-    // Spawn settings
-    this.spawnTimer = 0;
-    this.spawnInterval = 60;
+  reset() {
+    this.enemies.forEach((e) => {
+        this.viewport.removeChild(e.sprite);
+        e.sprite.destroy();
+      });
+      this.enemies = [];
 
-    // How far offscreen to spawn
-    this.spawnMargin = 50;
+      this.spawnTimer = 0;
+      this.spawnInterval = 60;
   }
 
   update(delta) {
-    // 1) Check if time to spawn a new enemy
     this.spawnTimer += delta.deltaTime;
     if (this.spawnTimer >= this.spawnInterval) {
       this.spawnTimer = 0;
       this.spawnEnemy();
     }
 
-    // 2) Update all enemies
     for (let i = this.enemies.length - 1; i >= 0; i--) {
       const enemy = this.enemies[i];
       if (enemy.dead) {
