@@ -7,8 +7,11 @@ export class Enemy {
     this.sprite.scale = 0.1;
     this.sprite.x = startX;
     this.sprite.y = startY;
+
     this.speed = 1;
     this.damagePerSecond = 0.1;
+    this.oxygen = 1;
+
     this.dead = false;
   }
 

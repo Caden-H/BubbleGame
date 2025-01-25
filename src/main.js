@@ -5,6 +5,7 @@ import * as pixi_viewport from "pixi-viewport";
 import { Player } from "./game/player.js";
 import { Bubble } from "./game/bubble.js";
 import { EnemySpawner } from "./game/enemy_spawner.js";
+import { OxygenUI } from "./game/oxygen_ui.js";
 
 // set screen width and height variables to the window size
 var screenWidth = window.innerWidth;
@@ -36,23 +37,14 @@ bubble_sprite.circle(0, 0, 10);
 bubble_sprite.fill();
 viewport.addChild(bubble_sprite);
 
-// bubble oxygen display
-const style = new PIXI.TextStyle({
-  fontFamily: "Arial",
-  fontSize: 24,
-  fill: "#ffffff",
-  stroke: "#000000",
-});
-const bubbleO2Text = new PIXI.Text({text: "Oxygen: 100", style});
-bubbleO2Text.x = screenWidth - 200;
-bubbleO2Text.y = 20;
-app.stage.addChild(bubbleO2Text);
 
 // Create player sprite
 await PIXI.Assets.load("raw-assets/images/Black_triangle.svg");
 const player_sprite = PIXI.Sprite.from("raw-assets/images/Black_triangle.svg");
 player_sprite.anchor.set(0.5); // Set the anchor to the center of the sprite
 viewport.addChild(player_sprite);
+
+const oxygen_ui = new OxygenUI(app, screenWidth);
 
 const GameState = {
   score: 0,
@@ -65,10 +57,7 @@ const GameState = {
 };
 
 const enemyTexture = await PIXI.Assets.load("raw-assets/images/fish-svgrepo-com.svg");
-
 const enemySpawner = new EnemySpawner(app, viewport, GameState.Bubble, GameState.Player);
-
-// Replace the placeholder texture with your actual enemy image
 enemySpawner.enemyTexture = enemyTexture;
 
 // move the viewport to center on the circle
@@ -105,9 +94,9 @@ function update(delta) {
 
   enemySpawner.update(delta);
 
-  const currentO2 = parseInt(GameState.Bubble.oxygen.toFixed(1));
-  bubbleO2Text.text = `Oxygen: ${currentO2}`;
+  oxygen_ui.update(GameState.Player, GameState.Bubble)
 
+  GameState.Player.updateOxygen(delta, GameState.Bubble)
 }
 
 function render() {

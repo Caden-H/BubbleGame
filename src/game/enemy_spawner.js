@@ -105,6 +105,7 @@ export class EnemySpawner {
     if (dist <= collisionRadius) {
       // "Kill" the enemy
       enemy.dead = true;
+      this.player.oxygen = Math.min(this.player.oxygen + enemy.oxygen, this.player.max_oxygen)
 
       // Optionally let the player restore some oxygen or something:
       // this.player.currentO2 = Math.min(this.player.currentO2 + 5, this.player.maxO2);

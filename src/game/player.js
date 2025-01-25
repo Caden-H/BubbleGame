@@ -11,12 +11,19 @@ export class Player {
     this.dy = 0;
 
     this.dash_length = 200;
-    this.dash_cooldown = 15;
+    this.dash_cooldown = 1/4; // seconds
+    this.dash_cost = 1;
+
     this.dash_speed = (2 * this.dash_length) / this.dash_cooldown;
     this.current_dash_cooldown = 0
     this.dashing = false;
     this.dash_dir_x = 0;
     this.dash_dir_y = 0;
+
+    this.oxygen = 10;
+    this.max_oxygen = 20;
+    this.oxygen_transfer_rate = 1; // per second
+    this.oxygen_use_rate = 0.1; // per second
   }
 
   get_position() {
@@ -74,6 +81,7 @@ export class Player {
   startDash(mousePos) {
     this.dashing = true;
     this.current_dash_cooldown = this.dash_cooldown;
+    this.oxygen -= this.dash_cost;
 
     const playerPos = this.PlayerSprite.getGlobalPosition();
     let dx = mousePos.x - playerPos.x;
@@ -94,14 +102,31 @@ export class Player {
     const fraction = this.current_dash_cooldown / this.dash_cooldown;
     const currentSpeed = this.dash_speed * fraction;
 
-    this.PlayerSprite.x += this.dash_dir_x * currentSpeed * delta.deltaTime;
-    this.PlayerSprite.y += this.dash_dir_y * currentSpeed * delta.deltaTime;
+    this.PlayerSprite.x += this.dash_dir_x * currentSpeed * delta.deltaTime / 60;
+    this.PlayerSprite.y += this.dash_dir_y * currentSpeed * delta.deltaTime / 60;
 
-    this.current_dash_cooldown -= delta.deltaTime;
+    this.current_dash_cooldown -= delta.deltaTime / 60;
 
     if (this.current_dash_cooldown <= 0) {
       this.dashing = false;
       this.current_dash_cooldown = 0;
+    }
+  }
+
+  updateOxygen(delta, bubble) {
+    let amount = 0;
+    if (this.in_bubble) {
+      if (this.oxygen > this.max_oxygen / 2) {
+        amount = Math.max(this.oxygen - this.max_oxygen / 2, delta.deltaTime / 60 * this.oxygen_transfer_rate)
+        this.oxygen -= amount;
+        bubble.change_oxygen(amount);
+      } else if (this.oxygen < this.max_oxygen / 2) {
+        amount = Math.max(this.max_oxygen / 2 - this.oxygen, delta.deltaTime / 60 * this.oxygen_transfer_rate)
+        this.oxygen += amount;
+        bubble.change_oxygen(-amount);
+      }
+    } else {
+      this.oxygen -= delta.deltaTime / 60 * this.oxygen_use_rate;
     }
   }
 }
