@@ -35,7 +35,7 @@ class EnemyParticle {
         this.maxLifetime = 300;
         this.lifetime = this.maxLifetime;
 
-        this.speed = 0.3
+        this.speed = 0.3 * Math.random() + 0.1;
     
 
     }
@@ -44,8 +44,11 @@ class EnemyParticle {
     update(delta) {
 
         this.sprite.alpha = this.lifetime/this.maxLifetime;
-        this.sprite.x += this.dx * delta.deltaTime * this.speed * (this.lifetime / this.maxLifetime) * (Math.random() * 3);
-        this.sprite.y += this.dy * delta.deltaTime * this.speed * (this.lifetime / this.maxLifetime) * (Math.random() * 3);
+        const angle = Math.atan2(this.dy, this.dx);
+        const speedFactor = this.speed * (this.lifetime / this.maxLifetime);
+        this.sprite.x += Math.cos(angle) * delta.deltaTime * speedFactor;
+        this.sprite.y += Math.sin(angle) * delta.deltaTime * speedFactor;
+        console.log(delta.deltaTime)
 
         this.lifetime -= delta.deltaTime;
         // if the particle has faded out, destroy it
