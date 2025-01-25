@@ -213,18 +213,15 @@ window.addEventListener("pointermove", (event) => {
 
 let paused = false;
 let other_mouse_click = true;
+let mouse_needed = true;
 // Mouse click => unify to dash with space
 window.addEventListener("mousedown", (e) => {
-  if (e.button === 0 && currentState == States.PLAYING && !paused && !other_mouse_click) {
-    console.log(currentState, paused, other_mouse_click)
+  if (e.button === 0 && !other_mouse_click && !mouse_needed) {
     keys["mouse_dash"] = true;
-  } else if (e.button === 0 && (currentState != States.PLAYING || paused)) {
-    other_mouse_click = true;
-    keys["mouse_dash"] = false;
   }
 });
 window.addEventListener("mouseup", (e) => {
-  if (e.button === 0 && States.PLAYING) {
+  if (e.button === 0 && !mouse_needed) {
     other_mouse_click = false;
     keys["mouse_dash"] = false;
   }
@@ -238,11 +235,14 @@ upgradeManager.onOpen = () => {
   bubbleAudio.volume = 0.5;
   waterAudio.volume = 0;
   paused = true;
+  mouse_needed = true;
+  other_mouse_click = true;
 };
 upgradeManager.onClose = () => {
   bubbleAudio.volume = 1;
   waterAudio.volume = 0;
   paused = false;
+  mouse_needed = false;
 };
 
 bubble_sprite.zIndex = 0;
@@ -320,9 +320,12 @@ function gameLoop(delta) {
 function update(delta) {
   switch (currentState) {
     case States.INTRO:
+      mouse_needed = true;
+      other_mouse_click = true;
       break;
 
     case States.PLAYING:
+      mouse_needed = false;
       if (!oxygen_ui) {
         oxygen_ui = new OxygenUI(app, screenWidth);
       }
@@ -362,6 +365,8 @@ function update(delta) {
       break;
 
     case States.GAMEOVER:
+      mouse_needed = true;
+      other_mouse_click = true;
       break;
   }
 }
