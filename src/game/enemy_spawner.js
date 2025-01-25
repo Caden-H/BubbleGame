@@ -87,11 +87,11 @@ export class EnemySpawner {
     // Create new enemy
     let enemy;
     if (health == 1) {
-      enemy = new Enemy(this.enemyTexture1, x, y, damage, oxygen, health);
+      enemy = new Enemy(this.enemyTexture1, x, y, damage, oxygen, health, this.viewport);
     } else if (health == 2) {
-      enemy = new Enemy(this.enemyTexture2, x, y, damage, oxygen, health);
+      enemy = new Enemy(this.enemyTexture2, x, y, damage, oxygen, health, this.viewport);
     } else if (health >= 3) {
-      enemy = new Enemy(this.enemyTexture3, x, y, damage, oxygen, health);
+      enemy = new Enemy(this.enemyTexture3, x, y, damage, oxygen, health, this.viewport);
     }
     this.viewport.addChild(enemy.sprite);
     this.enemies.push(enemy);
