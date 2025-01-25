@@ -22,9 +22,6 @@ To run this project, make sure `nodejs` and `npm` are installed and build it loc
 ```bash
 npm install
 ```
-```bash
-npm run build
-```
 
 To test:
 ```bash
