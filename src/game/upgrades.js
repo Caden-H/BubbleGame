@@ -109,7 +109,7 @@ export class UpgradeManager {
     closeBtn.addChild(closeBg);
 
     const closeTxtStyle = new PIXI.TextStyle({ fontSize: 16, fill: 0xd3d3d3 });
-    const closeTxt = new PIXI.Text({ text: "Close", style: closeTxtStyle });
+    const closeTxt = new PIXI.Text({ text: "Close (C)", style: closeTxtStyle });
     closeTxt.anchor.set(0.5);
     closeTxt.x = 40;
     closeTxt.y = 15;
@@ -166,7 +166,7 @@ export class UpgradeManager {
     let yOff = 60;
     for (const ug of this.upgrades) {
       const button = this._createUpgradeButton(ug);
-      button.x = -10; // or 20, as you like
+      button.x = -10;
       button.y = yOff;
       yOff += 35;
       this.menuContainer.addChild(button);
@@ -226,6 +226,8 @@ export class UpgradeManager {
         console.log("Not enough bubble oxygen to buy upgrade!");
       }
     });
+
+    this._highlightIfAffordable(container);
 
     return container;
   }

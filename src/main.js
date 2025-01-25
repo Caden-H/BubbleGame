@@ -241,6 +241,11 @@ viewport.sortChildren()
 function gameLoop(delta) {
   if (!paused) {
     update(delta);
+  } else {
+    if (keys["c"]) {
+      upgradeManager.closeMenu();
+      paused = false;
+    }
   }
   render();
 }
