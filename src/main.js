@@ -359,7 +359,7 @@ function update(delta) {
       waterAudio.volume = waterVolume;
 
       // Lose condition
-      if (GameState.Bubble.oxygen <= 0 || GameState.Player.oxygen <= 0) {
+      if (GameState.Bubble.oxygen <= 0 || (GameState.Player.oxygen <= 0 && !GameState.Player.in_bubble && !GameState.Player.dashing)) {
         setState(States.GAMEOVER);
       }
       break;
