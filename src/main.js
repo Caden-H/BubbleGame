@@ -36,6 +36,18 @@ bubble_sprite.circle(0, 0, 10);
 bubble_sprite.fill();
 viewport.addChild(bubble_sprite);
 
+// bubble oxygen display
+const style = new PIXI.TextStyle({
+  fontFamily: "Arial",
+  fontSize: 24,
+  fill: "#ffffff",
+  stroke: "#000000",
+});
+const bubbleO2Text = new PIXI.Text({text: "Oxygen: 100", style});
+bubbleO2Text.x = screenWidth - 200;
+bubbleO2Text.y = 20;
+app.stage.addChild(bubbleO2Text);
+
 // Create player sprite
 await PIXI.Assets.load("raw-assets/images/Black_triangle.svg");
 const player_sprite = PIXI.Sprite.from("raw-assets/images/Black_triangle.svg");
@@ -59,8 +71,6 @@ const enemySpawner = new EnemySpawner(app, viewport, GameState.Bubble, GameState
 // Replace the placeholder texture with your actual enemy image
 enemySpawner.enemyTexture = enemyTexture;
 
-
-
 // move the viewport to center on the circle
 viewport.moveCenter(bubble_sprite);
 
@@ -81,16 +91,11 @@ window.addEventListener('pointermove', (event) =>
     mousePos.y = event.y;
   });
 
-// Game loop
 function gameLoop(delta) {
-  // Update game state
   update(delta);
-
-  // Render the current state
   render();
 }
 
-// Update function to handle game logic
 function update(delta) {
   GameState.Bubble.grow(delta)
   const player_position = GameState.Player.get_position()
@@ -100,15 +105,13 @@ function update(delta) {
 
   enemySpawner.update(delta);
 
+  const currentO2 = parseInt(GameState.Bubble.oxygen.toFixed(1));
+  bubbleO2Text.text = `Oxygen: ${currentO2}`;
+
 }
 
-// Render function to handle drawing
 function render() {
-  // Draw game objects, update viewport, etc.
-
   viewport.moveCenter(GameState.Player.PlayerSprite);
-  // app.renderer.render(app.stage);
 }
 
-// Start the game loop
 app.ticker.add(gameLoop);
