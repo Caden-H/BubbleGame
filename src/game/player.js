@@ -213,7 +213,7 @@ export class Player {
   updateDash(delta) {
     // Fraction of dash cooldown left
     const fraction = this.current_dash_cooldown / this.dash_cooldown;
-    const currentSpeed = this.dash_speed * fraction;
+    const currentSpeed = Math.max(this.dash_speed * fraction, this.water_speed);
 
     // Move player
     this.PlayerSprite.x += this.dash_dir_x * currentSpeed * delta.elapsedMS / 1000;
