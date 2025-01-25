@@ -17,11 +17,16 @@ npm install --save-dev live-server
 
 npm i pixi-viewport -->
 
-To run this project, make sure `nodejs` and `npm` are installed and install it locally using npm:
+To run this project, make sure `nodejs` and `npm` are installed and build it locally using npm:
 
 ```bash
 npm install
 ```
 ```bash
-npm start
+npm run build
+```
+
+To test:
+```bash
+npm run dev
 ```
