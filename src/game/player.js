@@ -5,9 +5,9 @@ import DashParticle from "./dash_particles";
 export class Player {
   constructor(PlayerSprite, ArmSprite, viewport) {
     this.PlayerSprite = PlayerSprite;
-    this.PlayerSprite.scale = 0.3;
+    this.PlayerSprite.scale = 0.2;
     this.ArmSprite = ArmSprite;
-    this.ArmSprite.scale = 0.3;
+    this.ArmSprite.scale = 0.2;
     this.reset();
     this.viewport = viewport;
     this.particles = [];
