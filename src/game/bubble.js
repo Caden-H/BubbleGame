@@ -12,6 +12,7 @@ export class Bubble {
     this.base_radius = 10
     this.radius = 10;
     this.defense = 0;
+    this.scale_constant = 1/9;
   }
 
   get_position() {
@@ -32,7 +33,7 @@ export class Bubble {
 
   change_oxygen(amount) {
     this.oxygen += amount;
-    this.BubbleSprite.scale = Math.sqrt(this.oxygen)
+    this.BubbleSprite.scale = Math.sqrt(this.oxygen) * this.scale_constant
     this.radius = this.base_radius * Math.sqrt(this.oxygen)
   }
 }

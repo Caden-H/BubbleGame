@@ -92,11 +92,10 @@ startButton.on("pointerdown", () => {
   setState(States.PLAYING);
 });
 
-// Blue circle
-const bubble_sprite = new PIXI.Graphics();
-bubble_sprite.fill(0xADD8E6);
-bubble_sprite.circle(0, 0, 10);
-bubble_sprite.fill();
+// Bubble
+await PIXI.Assets.load("raw-assets/images/bubble.svg");
+const bubble_sprite = PIXI.Sprite.from("raw-assets/images/bubble.svg");
+bubble_sprite.anchor.set(0.5);
 viewport.addChild(bubble_sprite);
 
 // Player
