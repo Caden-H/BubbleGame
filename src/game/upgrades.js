@@ -148,8 +148,8 @@ export class UpgradeManager {
   //////////////////////////////////////////////////////////////////
   _initUpgrades() {
     this.upgrades = [
-      new Upgrade("Higher Growth rate",   "Bubble grows faster over time", 100, (b, p) => { b.oxygen_rate += 0.05; }),
-      new Upgrade("Better Defense",       "Reduces fish damage to bubble", 100, (b, p) => { b.defense += 0.5; }),
+      new Upgrade("Higher Growth rate",   "Bubble grows faster over time", 100, (b, p) => { b.oxygen_rate += 2; }),
+      new Upgrade("Better Defense",       "Reduces fish damage to bubble", 100, (b, p) => { b.defense += 2; }),
       new Upgrade("Faster O2 transfer",   "Player & bubble exchange O2 faster", 100, (b, p) => { p.oxygen_transfer_rate += 0.5; }),
       new Upgrade("Faster Speed in bubble","Player moves faster in bubble", 100, (b, p) => { p.bubble_speed += 120; }),
       new Upgrade("More Dash damage",     "Increases dash damage vs. enemies", 100, (b, p) => { p.dash_damage += 1; }),

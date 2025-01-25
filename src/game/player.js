@@ -162,9 +162,9 @@ export class Player {
 
     // Oxygen cost
     if (this.dash_cancelable) {
-      this.oxygen -= this.dash_cost / 2;
+      this.oxygen = Math.max(this.oxygen - this.dash_cost / 2, 0);
     } else {
-      this.oxygen -= this.dash_cost;
+      this.oxygen = Math.max(this.oxygen - this.dash_cost, 0);
     }
     this.dash_cancelable = false;
 
