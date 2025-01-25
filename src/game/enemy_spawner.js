@@ -104,7 +104,7 @@ export class EnemySpawner {
    */
   checkDashCollision(enemy) {
     // Pick some collision radius
-    const collisionRadius = 30;
+    const collisionRadius = 50;
     let player_pos = this.player.get_position()
     let enemy_pos = enemy.get_position()
     const dx = enemy_pos.x - player_pos.x;
