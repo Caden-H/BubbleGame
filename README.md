@@ -8,6 +8,7 @@ npm install pixi.js
 npm start
 
 npm install --save-dev vite
+npm install --save-dev live-server
 
 npm i pixi-viewport
 
