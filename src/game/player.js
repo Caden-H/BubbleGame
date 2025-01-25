@@ -10,7 +10,7 @@ export class Player {
   reset() {
     this.PlayerSprite.x = 0;
     this.PlayerSprite.y = 0;
-    
+
     this.bubble_speed = 300; // per second
     this.water_speed = 60; // per second
 
@@ -126,11 +126,11 @@ export class Player {
     let amount = 0;
     if (this.in_bubble) {
       if (this.oxygen > this.max_oxygen / 2) {
-        amount = Math.max(this.oxygen - this.max_oxygen / 2, delta.deltaTime / 60 * this.oxygen_transfer_rate)
+        amount = Math.min(this.oxygen - this.max_oxygen / 2, delta.deltaTime / 60 * this.oxygen_transfer_rate)
         this.oxygen -= amount;
         bubble.change_oxygen(amount);
       } else if (this.oxygen < this.max_oxygen / 2) {
-        amount = Math.max(this.max_oxygen / 2 - this.oxygen, delta.deltaTime / 60 * this.oxygen_transfer_rate)
+        amount = Math.min(this.max_oxygen / 2 - this.oxygen, delta.deltaTime / 60 * this.oxygen_transfer_rate)
         this.oxygen += amount;
         bubble.change_oxygen(-amount);
       }

@@ -109,7 +109,7 @@ player_sprite.anchor.set(0.5); // Set the anchor to the center of the sprite
 viewport.addChild(player_sprite);
 console.log(player_sprite)
 
-const oxygen_ui = new OxygenUI(app, screenWidth);
+let oxygen_ui;
 
 const GameState = {
   score: 0,
@@ -226,6 +226,7 @@ function update(delta) {
       break;
 
     case States.PLAYING:
+      if (!oxygen_ui) {oxygen_ui = new OxygenUI(app, screenWidth);}
       // bubble
       GameState.Bubble.grow(delta);
       const pos = GameState.Player.get_position();
