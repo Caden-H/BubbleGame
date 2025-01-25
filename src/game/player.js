@@ -6,7 +6,7 @@ export class Player {
   constructor(PlayerSprite, viewport) {
     this.PlayerSprite = PlayerSprite;
     this.PlayerSprite.scale = 0.1;
-    this.reset()
+    this.reset();
     this.viewport = viewport;
     this.particles = [];
   }
@@ -15,8 +15,8 @@ export class Player {
     this.PlayerSprite.x = 0;
     this.PlayerSprite.y = 0;
 
-    this.bubble_speed = 300; // per second
-    this.water_speed = 60; // per second
+    this.bubble_speed = 500; // per second
+    this.water_speed = 200;   // per second
 
     this.in_bubble = true;
 
@@ -24,12 +24,12 @@ export class Player {
     this.dy = 0;
 
     this.dash_length = 150;
-    this.dash_cooldown = 1/4; // seconds
+    this.dash_cooldown = 0.25; // seconds
     this.dash_cost = 1;
     this.dash_damage = 1;
 
     this.dash_speed = (2 * this.dash_length) / this.dash_cooldown;
-    this.current_dash_cooldown = 0
+    this.current_dash_cooldown = 0;
     this.dashing = false;
     this.dash_cancelable = false;
     this.released_space = false;
@@ -39,166 +39,193 @@ export class Player {
     this.oxygen = 10;
     this.max_oxygen = 20;
     this.oxygen_transfer_rate = 1; // per second
-    this.oxygen_use_rate = 2; // per second
+    this.oxygen_use_rate = 2;     // per second
   }
 
   get_position() {
-    return this.PlayerSprite.getGlobalPosition()
+    return this.PlayerSprite.getGlobalPosition();
   }
 
   move(delta, keys, mousePos, player_in_bubble) {
-
-    let speed = 0;
+    // Decide movement speed
     this.in_bubble = player_in_bubble;
-    if (player_in_bubble) {
-      speed = this.bubble_speed;
-    } else {
-      speed = this.water_speed
-    }
-    if (this.dashing == false || this.dash_cancelable) {
+    const speed = this.in_bubble ? this.bubble_speed : this.water_speed;
+
+    // If we're not in a dash or it's cancelable, we can move normally
+    if (!this.dashing || this.dash_cancelable) {
+      // Reset dx, dy
       this.dx = 0;
       this.dy = 0;
-      
-      if (keys["w"]) {
-        this.dy = -1;
-      }
-      if (keys["s"]) {
-        this.dy = +1;
-      }
-      if (keys["a"] ) {
-        this.dx = -1;
-      }
-      if (keys["d"]) {
-        this.dx = +1;
-      }
 
+      // Keyboard
+      if (keys["w"]) this.dy = -1;
+      if (keys["s"]) this.dy = +1;
+      if (keys["a"]) this.dx = -1;
+      if (keys["d"]) this.dx = +1;
+
+      // Controller left stick
+      const gpX = keys.gpX || 0;
+      const gpY = keys.gpY || 0;
+      this.dx += gpX;
+      this.dy += gpY;
+
+      // Normalize (dx, dy) if we have any movement
       if (this.dx !== 0 || this.dy !== 0) {
         const mag = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
         this.dx /= mag;
         this.dy /= mag;
       }
 
-      this.PlayerSprite.x += this.dx * speed * delta.deltaTime / 60;
-      this.PlayerSprite.y += this.dy * speed * delta.deltaTime / 60;
-
-      if (this.dx !== 0 || this.dy !== 0) {
-        const angle = Math.atan2(this.dy, this.dx);
-        this.PlayerSprite.rotation = angle - Math.PI / 2;
-      }
-
-      if (!keys[" "]) {
-        this.released_space = true
-      }
-      if ((keys[" "] && this.released_space && this.dash_cancelable) || (keys[" "] && !this.dash_cancelable)) {
-        this.startDash(mousePos);
-      } else if (this.dashing) {
-        this.updateDash(delta)
-      }
+      // Apply movement
+      this.PlayerSprite.x += this.dx * speed * (delta.deltaTime / 60);
+      this.PlayerSprite.y += this.dy * speed * (delta.deltaTime / 60);
+    } else {
+      // If already in a non-cancelable dash, just update it
+      this.updateDash(delta);
     }
-    else {
+
+    // === Rotation (facing) ===
+    // If the right stick is tilted, face that direction. 
+    // Otherwise, if left stick is moving, face movement direction.
+    const rx = keys.gpRX || 0;
+    const ry = keys.gpRY || 0;
+    const magR = Math.sqrt(rx * rx + ry * ry);
+
+    if (magR > 0.01) {
+      // Right stick aiming
+      this.PlayerSprite.rotation = Math.atan2(ry, rx) - Math.PI / 2;
+    } else if (!this.dashing && (this.dx !== 0 || this.dy !== 0)) {
+      // Face direction of movement
+      const angle = Math.atan2(this.dy, this.dx);
+      this.PlayerSprite.rotation = angle - Math.PI / 2;
+    }
+
+    // === Dash Input Check ===
+    // If not pressing dash, record that space was released
+    if (!keys[" "]) {
+      this.released_space = true;
+    }
+
+    // If dash (space/trigger/mouse) is pressed and was previously released
+    if (
+      keys[" "] &&
+      this.released_space &&
+      (this.dash_cancelable || !this.dashing)
+    ) {
+      this.startDash(mousePos, keys);
+    } else if (this.dashing) {
       this.updateDash(delta);
     }
   }
 
-  startDash(mousePos) {
-    // Set the player to dashing state
+  startDash(mousePos, keys) {
     this.dashing = true;
-    // Reset the space key release flag
     this.released_space = false;
-    // Set the dash cooldown timer
     this.current_dash_cooldown = this.dash_cooldown;
-    
-    // Reduce oxygen based on whether the dash is cancelable
+
+    // Oxygen cost
     if (this.dash_cancelable) {
       this.oxygen -= this.dash_cost / 2;
     } else {
       this.oxygen -= this.dash_cost;
     }
-    
-    // Dash is not cancelable during the dash
     this.dash_cancelable = false;
 
-    // Calculate the direction of the dash based on the mouse position
-    const playerPos = this.PlayerSprite.getGlobalPosition();
-    let dx = mousePos.x - playerPos.x;
-    let dy = mousePos.y - playerPos.y;
-    const mag = Math.sqrt(dx * dx + dy * dy);
-    if (mag > 0) {
-      dx /= mag;
-      dy /= mag;
+    // Decide dash direction:
+    // 1) If right stick is tilted, dash that direction.
+    // 2) Else if left stick is moving, dash that direction.
+    // 3) Else fallback to mouse.
+    const rx = keys.gpRX || 0;
+    const ry = keys.gpRY || 0;
+    const magR = Math.sqrt(rx * rx + ry * ry);
+
+    let dashX = 0;
+    let dashY = 0;
+    if (magR > 0.01) {
+      // Right stick dash
+      dashX = rx / magR;
+      dashY = ry / magR;
+    } else {
+      // If there's a movement vector from left stick or WASD
+      const moveMag = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+      if (moveMag > 0.01) {
+        // Dash in the direction we're moving/facing
+        dashX = this.dx;
+        dashY = this.dy;
+      } else {
+        // Fallback to mouse aim
+        // (Remove this if you want 100% ignore of mouse when a controller is connected)
+        const playerPos = this.PlayerSprite.getGlobalPosition();
+        dashX = mousePos.x - playerPos.x;
+        dashY = mousePos.y - playerPos.y;
+        const magM = Math.sqrt(dashX * dashX + dashY * dashY);
+        if (magM > 0) {
+          dashX /= magM;
+          dashY /= magM;
+        }
+      }
     }
 
-    // Set the dash direction
-    this.dash_dir_x = dx;
-    this.dash_dir_y = dy;
+    this.dash_dir_x = dashX;
+    this.dash_dir_y = dashY;
 
-    // Rotate the player sprite to face the dash direction
-    this.PlayerSprite.rotation = Math.atan2(dy, dx) - Math.PI / 2;
-    }
+    // Rotate sprite to dash direction
+    this.PlayerSprite.rotation = Math.atan2(dashY, dashX) - Math.PI / 2;
+  }
 
   updateDash(delta) {
-    // Calculate the fraction of the dash cooldown remaining
+    // Fraction of dash cooldown left
     const fraction = this.current_dash_cooldown / this.dash_cooldown;
-    // Calculate the current speed based on the fraction of the cooldown remaining
     const currentSpeed = this.dash_speed * fraction;
 
-    // Update the player's position based on the dash direction and current speed
-    this.PlayerSprite.x += this.dash_dir_x * currentSpeed * delta.deltaTime / 60;
-    this.PlayerSprite.y += this.dash_dir_y * currentSpeed * delta.deltaTime / 60;
+    // Move player
+    this.PlayerSprite.x += this.dash_dir_x * currentSpeed * (delta.deltaTime / 60);
+    this.PlayerSprite.y += this.dash_dir_y * currentSpeed * (delta.deltaTime / 60);
 
     this.generateDashParticles();
 
-    // Decrease the dash cooldown timer
+    // Decrease cooldown
     this.current_dash_cooldown -= delta.deltaTime / 60;
-
-    // Check if the dash cooldown has finished
     if (this.current_dash_cooldown <= 0) {
-      // End the dash
       this.dashing = false;
-      // Reset the dash cancelable flag
       this.dash_cancelable = false;
-      // Ensure the cooldown timer is reset to 0
       this.current_dash_cooldown = 0;
     }
-    }
+  }
 
   updateOxygen(delta, bubble) {
     let amount = 0;
     if (this.in_bubble) {
       if (this.oxygen > this.max_oxygen / 2) {
-        amount = Math.min(this.oxygen - this.max_oxygen / 2, delta.deltaTime / 60 * this.oxygen_transfer_rate)
+        amount = Math.min(
+          this.oxygen - this.max_oxygen / 2,
+          (delta.deltaTime / 60) * this.oxygen_transfer_rate
+        );
         this.oxygen -= amount;
         bubble.change_oxygen(amount);
       } else if (this.oxygen < this.max_oxygen / 2) {
-        amount = Math.min(this.max_oxygen / 2 - this.oxygen, delta.deltaTime / 60 * this.oxygen_transfer_rate)
+        amount = Math.min(
+          this.max_oxygen / 2 - this.oxygen,
+          (delta.deltaTime / 60) * this.oxygen_transfer_rate
+        );
         this.oxygen += amount;
         bubble.change_oxygen(-amount);
       }
     } else {
-      this.oxygen -= delta.deltaTime / 60 * this.oxygen_use_rate;
+      this.oxygen -= (delta.deltaTime / 60) * this.oxygen_use_rate;
     }
   }
 
   generateDashParticles() {
-    let particle = new DashParticle(this.viewport, this.PlayerSprite.x, this.PlayerSprite.y);  
+    let lightness = this.oxygen/this.max_oxygen;
+    const particle = new DashParticle(this.viewport, this.PlayerSprite.x, this.PlayerSprite.y, lightness);
     this.particles.push(particle);
-    // let particleSprite = new PIXI.Graphics();
-    // particleSprite.fill(0x0000ff);
-    // particleSprite.circle(this.PlayerSprite.x, this.PlayerSprite.y, 3);
-    // particleSprite.fill();
-    // this.viewport.addChild(particleSprite);
   }
 
   updateParticles(delta) {
-
-    this.particles = this.particles.filter(particle => particle.lifetime > 0);
-
+    this.particles = this.particles.filter((p) => p.lifetime > 0);
     for (let i = 0; i < this.particles.length; i++) {
       this.particles[i].update(delta);
     }
-    
-
   }
- 
-  
 }
