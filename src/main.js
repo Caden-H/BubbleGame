@@ -104,10 +104,15 @@ const player_sprite = PIXI.Sprite.from("raw-assets/images/Black_triangle.svg");
 player_sprite.anchor.set(0.5);
 viewport.addChild(player_sprite);
 
+await PIXI.Assets.load("raw-assets/images/Dash.svg");
+const arm_sprite = PIXI.Sprite.from("raw-assets/images/Dash.svg");
+arm_sprite.anchor.set(0.5);
+player_sprite.addChild(arm_sprite);
+
 let oxygen_ui;
 
 const GameState = {
-  Player: new Player(player_sprite, viewport),
+  Player: new Player(player_sprite, arm_sprite, viewport),
   Bubble: new Bubble(bubble_sprite),
 };
 

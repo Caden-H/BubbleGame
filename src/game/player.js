@@ -3,9 +3,11 @@ import * as pixi_viewport from "pixi-viewport";
 import DashParticle from "./dash_particles";
 
 export class Player {
-  constructor(PlayerSprite, viewport) {
+  constructor(PlayerSprite, ArmSprite, viewport) {
     this.PlayerSprite = PlayerSprite;
     this.PlayerSprite.scale = 0.1;
+    this.ArmSprite = ArmSprite;
+    this.ArmSprite.scale = 10;
     this.reset();
     this.viewport = viewport;
     this.particles = [];
@@ -27,6 +29,9 @@ export class Player {
   reset() {
     this.PlayerSprite.x = 0;
     this.PlayerSprite.y = 0;
+
+    this.ArmSprite.x = 0;
+    this.ArmSprite.y = 0;
 
     this.bubble_speed = 500; // per second
     this.water_speed = 200;   // per second
@@ -120,17 +125,32 @@ export class Player {
       const ry = keys.gpRY || 0;
       const magR = Math.sqrt(rx * rx + ry * ry);
 
-      if (magR > 0.01) {
-        // Right stick aiming
-        this.PlayerSprite.rotation = Math.atan2(ry, rx) - Math.PI / 2;
-      } else if (!this.dashing && (this.dx_conch !== 0 || this.dy_conch !== 0)) {
+      
+      if (this.dx_conch !== 0 || this.dy_conch !== 0) {
         // Face direction of conch movement
         const angle = Math.atan2(this.dy_conch, this.dx_conch);
         this.PlayerSprite.rotation = angle - Math.PI / 2;
-      } else if (!this.dashing && (this.dx_key !== 0 || this.dy_key !== 0)) {
+      } else if (this.dx_key !== 0 || this.dy_key !== 0) {
         // Face direction of key movement
         const angle = Math.atan2(this.dy_key, this.dx_key);
         this.PlayerSprite.rotation = angle - Math.PI / 2;
+      }
+
+      if (magR > 0.01) {
+        // Right stick aiming
+        this.ArmSprite.rotation = Math.atan2(ry, rx) - Math.PI / 2 - this.PlayerSprite.rotation;
+      } else if (this.dx_conch !== 0 || this.dy_conch !== 0){
+        // Left stick aiming
+        this.ArmSprite.rotation = Math.atan2(this.dy_conch, this.dx_conch) - Math.PI / 2 - this.PlayerSprite.rotation;
+      } else {
+        // Fallback to mouse aim
+        const playerPos = this.PlayerSprite.getGlobalPosition();
+        const mx = mousePos.x - playerPos.x;
+        const my = mousePos.y - playerPos.y;
+        const magM = Math.sqrt(mx * mx + my * my);
+        if (magM > 0) {
+          this.ArmSprite.rotation = Math.atan2(my, mx) - Math.PI / 2 - this.PlayerSprite.rotation;
+        }
       }
 
       // === Dash Input Check ===
