@@ -108,12 +108,8 @@ viewport.addChild(player_sprite);
 let oxygen_ui;
 
 const GameState = {
-  score: 0,
-  level: 1,
   Player: new Player(player_sprite, viewport),
   Bubble: new Bubble(bubble_sprite),
-  enemies: [],
-  bullets: [],
 };
 
 const enemyTexture = await PIXI.Assets.load("raw-assets/images/fish-svgrepo-com.svg");
@@ -161,7 +157,6 @@ restartButton.addChild(restartText);
 
 restartButton.on("pointerdown", () => {
   resetGame();
-  // setState(States.PLAYING); // Moved to resetGame
 });
 
 

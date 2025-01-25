@@ -31,7 +31,7 @@ export class EnemySpawner {
     this.spawnInterval = 0.9 ** Math.floor(this.total_seconds / 30)
     if (this.spawnTimer >= this.spawnInterval) {
       this.spawnTimer = 0;
-      let damage = Math.ceil(this.total_seconds / 60)
+      let damage = Math.ceil(this.total_seconds / 60) * 5
       let oxygen = Math.ceil(this.total_seconds / 60)
       let health = Math.ceil(this.total_seconds / 60)
       this.spawnEnemy(damage, oxygen, health);
