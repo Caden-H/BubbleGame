@@ -33,7 +33,7 @@ export class Bubble {
 
   change_oxygen(amount) {
     this.oxygen += amount;
-    this.BubbleSprite.scale = Math.sqrt(this.oxygen) * this.scale_constant
-    this.radius = this.base_radius * Math.sqrt(this.oxygen)
+    this.BubbleSprite.scale = Math.sqrt(this.oxygen+30) * this.scale_constant
+    this.radius = this.base_radius * Math.sqrt(this.oxygen+30)
   }
 }
