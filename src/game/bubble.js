@@ -1,7 +1,12 @@
+import BubbleParticle from "./bubble_particle";
+
+
 export class Bubble {
-  constructor(BubbleSprite) {
+  constructor(BubbleSprite, viewport) {
     this.BubbleSprite = BubbleSprite;
-    this.reset()
+    this.viewport = viewport;
+    this.reset();
+    this.bubble_particles = [];
   }
 
   reset() {
@@ -9,10 +14,10 @@ export class Bubble {
     this.BubbleSprite.y = 0;
     this.oxygen = 100;
     this.oxygen_rate = 5; // per seconds
-    this.base_radius = 10
+    this.base_radius = 10;
     this.radius = 10;
     this.defense = 0;
-    this.scale_constant = 1/8;
+    this.scale_constant = 1 / 9;
   }
 
   get_position() {
@@ -27,13 +32,29 @@ export class Bubble {
     return dist <= this.radius;
   }
 
-  grow(delta) {
-    this.change_oxygen(this.oxygen_rate * delta.elapsedMS / 1000);
+  update(delta) {
+    this.change_oxygen((this.oxygen_rate * delta.elapsedMS) / 1000);
+
+    // Update particles
+    for (let i = this.bubble_particles.length - 1; i >= 0; i--) {
+      const particle = this.bubble_particles[i];
+      particle.update(delta);
+      if (particle.lifetime <= 0) {
+        this.bubble_particles.splice(i, 1);
+      }
+    }
   }
 
   change_oxygen(amount) {
     this.oxygen += amount;
-    this.BubbleSprite.scale = Math.sqrt(this.oxygen+30) * this.scale_constant
-    this.radius = this.base_radius * Math.sqrt(this.oxygen+30)
+    this.BubbleSprite.scale = Math.sqrt(this.oxygen + 30) * this.scale_constant;
+    this.radius = this.base_radius * Math.sqrt(this.oxygen + 30);
+
+    // if (amount > 0) {
+    //   // create a bubble particle that floats outward from the middle of the bubble
+    //   const particle = new BubbleParticle(this.viewport, 0, 0);
+    //   this.bubble_particles.push(particle);
+
+    // }
   }
 }

@@ -10,7 +10,7 @@ import { UpgradeManager } from "./game/upgrades.js";
 const States = {
   INTRO: "intro",
   PLAYING: "playing",
-  GAMEOVER: "gameover"
+  GAMEOVER: "gameover",
 };
 let currentState = States.INTRO;
 
@@ -56,7 +56,7 @@ introContainer.addChild(introBg);
 
 const titleStyle = new PIXI.TextStyle({
   fontSize: 48,
-  fill: 0xffffff
+  fill: 0xffffff,
 });
 const titleText = new PIXI.Text({ text: "Bubble Defender", style: titleStyle });
 titleText.anchor.set(0.5);
@@ -78,7 +78,7 @@ startButton.addChild(startButtonBg);
 
 const startTextStyle = new PIXI.TextStyle({
   fontSize: 24,
-  fill: 0xffffff
+  fill: 0xffffff,
 });
 const startText = new PIXI.Text({ text: "Start Game", style: startTextStyle });
 startText.anchor.set(0.5);
@@ -115,13 +115,18 @@ let oxygen_ui;
 
 const GameState = {
   Player: new Player(player_sprite, arm_sprite, viewport),
-  Bubble: new Bubble(bubble_sprite),
+  Bubble: new Bubble(bubble_sprite, viewport),
 };
 
 const enemyTexture1 = await PIXI.Assets.load("raw-assets/images/Fish1.svg");
 const enemyTexture2 = await PIXI.Assets.load("raw-assets/images/Fish2.svg");
 const enemyTexture3 = await PIXI.Assets.load("raw-assets/images/Fish3.svg");
-const enemySpawner = new EnemySpawner(app, viewport, GameState.Bubble, GameState.Player);
+const enemySpawner = new EnemySpawner(
+  app,
+  viewport,
+  GameState.Bubble,
+  GameState.Player
+);
 enemySpawner.enemyTexture1 = enemyTexture1;
 enemySpawner.enemyTexture2 = enemyTexture2;
 enemySpawner.enemyTexture3 = enemyTexture3;
@@ -153,7 +158,7 @@ restartButton.buttonMode = true;
 gameOverContainer.addChild(restartButton);
 
 const restartButtonBg = new PIXI.Graphics();
-restartButtonBg.fill(0x228B22);
+restartButtonBg.fill(0x228b22);
 restartButtonBg.roundRect(0, 0, 200, 60, 10);
 restartButtonBg.fill();
 restartButton.addChild(restartButtonBg);
@@ -168,8 +173,6 @@ restartButton.addChild(restartText);
 restartButton.on("pointerdown", () => {
   resetGame();
 });
-
-
 
 const introAudio = new Audio("raw-assets/audio/intro.wav");
 introAudio.loop = true;
@@ -237,7 +240,12 @@ const upgrade_sprite = PIXI.Sprite.from("raw-assets/images/tree.svg");
 upgrade_sprite.anchor.set(0.5);
 viewport.addChild(bubble_sprite);
 
-const upgradeManager = new UpgradeManager(app, GameState.Bubble, GameState.Player, upgrade_sprite);
+const upgradeManager = new UpgradeManager(
+  app,
+  GameState.Bubble,
+  GameState.Player,
+  upgrade_sprite
+);
 viewport.addChild(upgradeManager.stationContainer);
 app.stage.addChild(upgradeManager.menuContainer);
 
@@ -325,9 +333,6 @@ function gameLoop(delta) {
   render();
 }
 
-
-
-
 function update(delta) {
   switch (currentState) {
     case States.INTRO:
@@ -341,7 +346,7 @@ function update(delta) {
         oxygen_ui = new OxygenUI(app, screenWidth);
       }
       // Bubble
-      GameState.Bubble.grow(delta);
+      GameState.Bubble.update(delta);
       const pos = GameState.Player.get_position();
       const inBubble = GameState.Bubble.contains(pos.x, pos.y);
 
@@ -370,7 +375,12 @@ function update(delta) {
       waterAudio.volume = waterVolume;
 
       // Lose condition
-      if (GameState.Bubble.oxygen <= 0 || (GameState.Player.oxygen <= 0 && !GameState.Player.in_bubble && !GameState.Player.dashing)) {
+      if (
+        GameState.Bubble.oxygen <= 0 ||
+        (GameState.Player.oxygen <= 0 &&
+          !GameState.Player.in_bubble &&
+          !GameState.Player.dashing)
+      ) {
         setState(States.GAMEOVER);
       }
       break;
@@ -411,9 +421,9 @@ function setState(newState) {
 
   currentState = newState;
 
-  introContainer.visible = (currentState === States.INTRO);
-  gameContainer.visible = (currentState === States.PLAYING);
-  gameOverContainer.visible = (currentState === States.GAMEOVER);
+  introContainer.visible = currentState === States.INTRO;
+  gameContainer.visible = currentState === States.PLAYING;
+  gameOverContainer.visible = currentState === States.GAMEOVER;
 }
 
 function resetGame() {
