@@ -21,7 +21,7 @@ export class Enemy {
   }
 
   update(delta, bubble) {
-    if (this.dead) return;
+    if (this.dead) this.sprite.destroy();
 
     let position = this.sprite.getGlobalPosition()
 
@@ -44,5 +44,12 @@ export class Enemy {
     if (dist <= bubble.radius) {
       bubble.change_oxygen(Math.min(-this.damage * delta.elapsedMS / 1000 - bubble.defense, 0));
     }
+  }
+
+  kill() {
+    this.dead = true;
+    this.sprite.destroy();
+
+    // create death particles
   }
 }
