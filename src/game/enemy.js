@@ -8,9 +8,9 @@ export class Enemy {
     this.sprite.x = startX;
     this.sprite.y = startY;
 
-    this.speed = 1;
+    this.speed = 50; // per second
     this.oxygen = oxygen;
-    this.damage = damage;
+    this.damage = damage; // per second
     this.health = health;
 
     this.dead = false;
@@ -37,12 +37,12 @@ export class Enemy {
       const angle = Math.atan2(ny, nx);
       this.sprite.rotation = angle + Math.PI;
       
-      this.sprite.x += nx * this.speed * delta.deltaTime;
-      this.sprite.y += ny * this.speed * delta.deltaTime;
+      this.sprite.x += nx * this.speed * delta.elapsedMS / 1000;
+      this.sprite.y += ny * this.speed * delta.elapsedMS / 1000;
     }
 
     if (dist <= bubble.radius) {
-      bubble.change_oxygen(Math.min(-this.damage * delta.deltaTime / 60 - bubble.defense, 0));
+      bubble.change_oxygen(Math.min(-this.damage * delta.elapsedMS / 1000 - bubble.defense, 0));
     }
   }
 }

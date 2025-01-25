@@ -24,7 +24,7 @@ export class Player {
     this.dy = 0;
 
     this.dash_length = 150;
-    this.dash_cooldown = 0.25; // seconds
+    this.dash_cooldown = 0.5; // seconds
     this.dash_cost = 1;
     this.dash_damage = 1;
 
@@ -33,6 +33,8 @@ export class Player {
     this.dashing = false;
     this.dash_cancelable = false;
     this.released_space = false;
+    this.released_mouse = false;
+    this.released_controller = false;
     this.dash_dir_x = 0;
     this.dash_dir_y = 0;
 
@@ -77,50 +79,64 @@ export class Player {
       }
 
       // Apply movement
-      this.PlayerSprite.x += this.dx * speed * (delta.deltaTime / 60);
-      this.PlayerSprite.y += this.dy * speed * (delta.deltaTime / 60);
+      this.PlayerSprite.x += this.dx * speed * delta.elapsedMS / 1000;
+      this.PlayerSprite.y += this.dy * speed * delta.elapsedMS / 1000;
+
+      // === Rotation (facing) ===
+      // If the right stick is tilted, face that direction. 
+      // Otherwise, if left stick is moving, face movement direction.
+      const rx = keys.gpRX || 0;
+      const ry = keys.gpRY || 0;
+      const magR = Math.sqrt(rx * rx + ry * ry);
+
+      if (magR > 0.01) {
+        // Right stick aiming
+        this.PlayerSprite.rotation = Math.atan2(ry, rx) - Math.PI / 2;
+      } else if (!this.dashing && (this.dx !== 0 || this.dy !== 0)) {
+        // Face direction of movement
+        const angle = Math.atan2(this.dy, this.dx);
+        this.PlayerSprite.rotation = angle - Math.PI / 2;
+      }
+
+      // === Dash Input Check ===
+      // If not pressing dash, record that space was released
+      if (!keys[" "]) {
+        this.released_space = true;
+      }
+      if (!keys["controller_dash"]) {
+        this.released_controller = true;
+      }
+      if (!keys["mouse_dash"]) {
+        this.released_mouse = true;
+      }
+
+      // If dash (space/trigger/mouse) is pressed and was previously released
+      if ((keys[" "]) &&
+        ((this.released_space && this.dash_cancelable) ||
+        !this.dash_cancelable)) {
+          this.released_space = false;
+          this.startDash(mousePos, keys);
+        } else if ((keys["controller_dash"]) &&
+        ((this.released_controller && this.dash_cancelable) ||
+        !this.dash_cancelable)) {
+          this.released_controller = false;
+          this.startDash(mousePos, keys);
+        } else if ((keys["mouse_dash"]) &&
+        ((this.released_mouse && this.dash_cancelable) ||
+        !this.dash_cancelable)
+      ) {
+        this.released_mouse = false;
+        this.startDash(mousePos, keys);
+      } else if (this.dashing) {
+        this.updateDash(delta);
+      }
     } else {
-      // If already in a non-cancelable dash, just update it
-      this.updateDash(delta);
-    }
-
-    // === Rotation (facing) ===
-    // If the right stick is tilted, face that direction. 
-    // Otherwise, if left stick is moving, face movement direction.
-    const rx = keys.gpRX || 0;
-    const ry = keys.gpRY || 0;
-    const magR = Math.sqrt(rx * rx + ry * ry);
-
-    if (magR > 0.01) {
-      // Right stick aiming
-      this.PlayerSprite.rotation = Math.atan2(ry, rx) - Math.PI / 2;
-    } else if (!this.dashing && (this.dx !== 0 || this.dy !== 0)) {
-      // Face direction of movement
-      const angle = Math.atan2(this.dy, this.dx);
-      this.PlayerSprite.rotation = angle - Math.PI / 2;
-    }
-
-    // === Dash Input Check ===
-    // If not pressing dash, record that space was released
-    if (!keys[" "]) {
-      this.released_space = true;
-    }
-
-    // If dash (space/trigger/mouse) is pressed and was previously released
-    if (
-      keys[" "] &&
-      this.released_space &&
-      (this.dash_cancelable || !this.dashing)
-    ) {
-      this.startDash(mousePos, keys);
-    } else if (this.dashing) {
-      this.updateDash(delta);
+      this.updateDash(delta)
     }
   }
 
   startDash(mousePos, keys) {
     this.dashing = true;
-    this.released_space = false;
     this.current_dash_cooldown = this.dash_cooldown;
 
     // Oxygen cost
@@ -179,13 +195,13 @@ export class Player {
     const currentSpeed = this.dash_speed * fraction;
 
     // Move player
-    this.PlayerSprite.x += this.dash_dir_x * currentSpeed * (delta.deltaTime / 60);
-    this.PlayerSprite.y += this.dash_dir_y * currentSpeed * (delta.deltaTime / 60);
+    this.PlayerSprite.x += this.dash_dir_x * currentSpeed * delta.elapsedMS / 1000;
+    this.PlayerSprite.y += this.dash_dir_y * currentSpeed * delta.elapsedMS / 1000;
 
     this.generateDashParticles();
 
     // Decrease cooldown
-    this.current_dash_cooldown -= delta.deltaTime / 60;
+    this.current_dash_cooldown -= delta.elapsedMS / 1000;
     if (this.current_dash_cooldown <= 0) {
       this.dashing = false;
       this.dash_cancelable = false;
@@ -199,20 +215,20 @@ export class Player {
       if (this.oxygen > this.max_oxygen / 2) {
         amount = Math.min(
           this.oxygen - this.max_oxygen / 2,
-          (delta.deltaTime / 60) * this.oxygen_transfer_rate
+          (delta.elapsedMS / 1000) * this.oxygen_transfer_rate
         );
         this.oxygen -= amount;
         bubble.change_oxygen(amount);
       } else if (this.oxygen < this.max_oxygen / 2) {
         amount = Math.min(
           this.max_oxygen / 2 - this.oxygen,
-          (delta.deltaTime / 60) * this.oxygen_transfer_rate
+          (delta.elapsedMS / 1000) * this.oxygen_transfer_rate
         );
         this.oxygen += amount;
         bubble.change_oxygen(-amount);
       }
     } else {
-      this.oxygen -= (delta.deltaTime / 60) * this.oxygen_use_rate;
+      this.oxygen -= delta.elapsedMS / 1000 * this.oxygen_use_rate;
     }
   }
 

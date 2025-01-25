@@ -26,8 +26,8 @@ export class EnemySpawner {
   }
 
   update(delta) {
-    this.spawnTimer += delta.deltaTime / 60;
-    this.total_seconds += delta.deltaTime / 60;
+    this.spawnTimer += delta.elapsedMS / 1000;
+    this.total_seconds += delta.elapsedMS / 1000;
     this.spawnInterval = 0.9 ** Math.floor(this.total_seconds / 30)
     if (this.spawnTimer >= this.spawnInterval) {
       this.spawnTimer = 0;
@@ -109,9 +109,6 @@ export class EnemySpawner {
         this.player.dash_cancelable = true;
         this.player.oxygen = Math.min(this.player.oxygen + enemy.oxygen, this.player.max_oxygen)
       }
-
-      // Optionally let the player restore some oxygen or something:
-      // this.player.currentO2 = Math.min(this.player.currentO2 + 5, this.player.maxO2);
     }
   }
 }
