@@ -31,7 +31,7 @@ viewport.drag().pinch().wheel().decelerate();
 // add a blue circle in the center of the view
 const bubble_sprite = new PIXI.Graphics();
 bubble_sprite.fill(0xADD8E6);
-bubble_sprite.circle(0, 0, 50);
+bubble_sprite.circle(0, 0, 10);
 bubble_sprite.fill();
 viewport.addChild(bubble_sprite);
 
@@ -53,24 +53,27 @@ const GameState = {
   // Add more properties as needed
 };
 
-console.log(GameState.Player.x);
-
 
 
 // move the viewport to center on the circle
 viewport.moveCenter(bubble_sprite);
 
-// move the viewport with the arrow keys
-
 let keys = {};
+let mousePos = {x: 0, y: 0}
 
 window.addEventListener("keydown", (event) => {
-  keys[event.key] = true;
+  keys[event.key.toLowerCase()] = true;
 });
 
 window.addEventListener("keyup", (event) => {
-  keys[event.key] = false;
+  keys[event.key.toLowerCase()] = false;
 });
+
+window.addEventListener('pointermove', (event) =>
+  {
+    mousePos.x = event.x;
+    mousePos.y = event.y;
+  });
 
 // Game loop
 function gameLoop(delta) {
@@ -83,59 +86,12 @@ function gameLoop(delta) {
 
 // Update function to handle game logic
 function update(delta) {
-  // Update game objects, handle input, etc.
-  // log a tick to the console
-  // console.log("Tick:", delta);
+  GameState.Bubble.grow(delta)
+  const player_position = GameState.Player.get_position()
+  const player_in_bubble = GameState.Bubble.contains(player_position.x, player_position.y)
 
-  // make the circle grow and shrink over time
-  GameState.Bubble.setScale(3.5 + 0.5 * Math.sin(Date.now() * 0.001));
+  GameState.Player.move(delta, keys, mousePos, player_in_bubble)
 
-
-  // Movement speed
-  const speed = 5;
-
-  // Each frame, figure out the net direction of movement
-  let dx = 0;
-  let dy = 0;
-
-  if (keys["w"] || keys["W"]) {
-    dy -= 1;
-  }
-  if (keys["s"] || keys["S"]) {
-    dy += 1;
-  }
-  if (keys["a"] || keys["A"]) {
-    dx -= 1;
-  }
-  if (keys["d"] || keys["D"]) {
-    dx += 1;
-  }
-
-  // Normalize diagonal speed (optional)
-  // This step ensures moving diagonally isn’t “faster” than cardinal directions
-  // but in many games people just skip this. If you want it smooth, do this:
-  if (dx !== 0 || dy !== 0) {
-    // Compute magnitude
-    const mag = Math.sqrt(dx * dx + dy * dy);
-    dx /= mag;
-    dy /= mag;
-  }
-
-  // Now move the sprite
-  GameState.Player.PlayerSprite.x += dx * speed;
-  GameState.Player.PlayerSprite.y += dy * speed;
-
-  // Rotate the sprite if we’re actually moving
-  // (i.e., dx or dy is non-zero)
-  if (dx !== 0 || dy !== 0) {
-    // Compute the angle in radians
-    // atan2(Y, X) => 0 rad is “facing right,” angles go CCW
-    const angle = Math.atan2(dy, dx);
-    
-    // If your sprite texture points “up” at 0 radians, subtract π/2
-    // If it’s already aligned to the right, you can skip the offset
-    GameState.Player.PlayerSprite.rotation = angle - Math.PI / 2;
-  }
 }
 
 // Render function to handle drawing
