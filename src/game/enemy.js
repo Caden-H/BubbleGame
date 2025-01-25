@@ -1,7 +1,11 @@
 import * as PIXI from "pixi.js";
 
+import EnemyParticle from "./enemy_particles";
+
+var enemy_particles = [];
+
 export class Enemy {
-  constructor(texture, startX, startY, damage, oxygen, health) {
+  constructor(texture, startX, startY, damage, oxygen, health, viewport) {
     this.sprite = new PIXI.Sprite(texture);
     this.sprite.anchor.set(0.5);
     this.sprite.scale = 1;
@@ -14,6 +18,7 @@ export class Enemy {
     this.health = health;
 
     this.dead = false;
+    this.viewport = viewport;
   }
 
   get_position() {
@@ -21,7 +26,7 @@ export class Enemy {
   }
 
   update(delta, bubble) {
-    if (this.dead) this.sprite.destroy();
+    if (this.dead) this.kill();
 
     let position = this.sprite.getGlobalPosition()
 
@@ -44,12 +49,30 @@ export class Enemy {
     if (dist <= bubble.radius) {
       bubble.change_oxygen(Math.min(-this.damage * delta.elapsedMS / 1000 - bubble.defense, 0));
     }
+
+    // run update() on all particles
+    for (let i = enemy_particles.length - 1; i >= 0; i--) {
+      const particle = enemy_particles[i];
+      particle.update(delta);
+      if (particle.lifetime <= 0) {
+        enemy_particles.splice(i, 1);
+      }
+    }
   }
 
   kill() {
+    // // create 10-20 particles from EnemyParticle
+    if (this.dead) return;
+
+    let tempx = this.sprite.x;
+    let tempy = this.sprite.y;
+    for (let i = 0; i < Math.random() * 50 + 50; i++) {
+      let particle = new EnemyParticle(this.viewport, tempx, tempy);
+      enemy_particles.push(particle);
+    }
+
     this.dead = true;
     this.sprite.destroy();
 
-    // create death particles
   }
 }
