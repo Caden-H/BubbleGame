@@ -1,8 +1,0 @@
-- [ ] add player sprite
-- [ ] add enemy sprite
-- [ ] add better bubble/shop sprites
-- [ ] fix bug in upgrades menu where upgrade containers aren't visible- i am fully lost on this one lol
-- [ ] add dash animation+sfx on hit/whiff
-- [ ] maybe animations for enemy/player moving? idk might be hard
-- [ ] playtest/tune difficulty
-- [ ] you shouldn't be able to die while dashing in the bubble
