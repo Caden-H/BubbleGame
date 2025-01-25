@@ -1,10 +1,14 @@
+import * as PIXI from "pixi.js";
+import * as pixi_viewport from "pixi-viewport";
+import DashParticle from "./dash_particles";
 
 export class Player {
-  constructor(PlayerSprite) {
+  constructor(PlayerSprite, viewport) {
     this.PlayerSprite = PlayerSprite;
     this.PlayerSprite.scale = 0.1;
     this.reset()
-
+    this.viewport = viewport;
+    this.particles = [];
   }
 
   reset() {
@@ -20,7 +24,7 @@ export class Player {
     this.dy = 0;
 
     this.dash_length = 150;
-    this.dash_cooldown = 1/2; // seconds
+    this.dash_cooldown = 1/4; // seconds
     this.dash_cost = 1;
     this.dash_damage = 1;
 
@@ -43,6 +47,7 @@ export class Player {
   }
 
   move(delta, keys, mousePos, player_in_bubble) {
+
     let speed = 0;
     this.in_bubble = player_in_bubble;
     if (player_in_bubble) {
@@ -141,6 +146,8 @@ export class Player {
     this.PlayerSprite.x += this.dash_dir_x * currentSpeed * delta.deltaTime / 60;
     this.PlayerSprite.y += this.dash_dir_y * currentSpeed * delta.deltaTime / 60;
 
+    this.generateDashParticles();
+
     // Decrease the dash cooldown timer
     this.current_dash_cooldown -= delta.deltaTime / 60;
 
@@ -171,4 +178,27 @@ export class Player {
       this.oxygen -= delta.deltaTime / 60 * this.oxygen_use_rate;
     }
   }
+
+  generateDashParticles() {
+    let particle = new DashParticle(this.viewport, this.PlayerSprite.x, this.PlayerSprite.y);  
+    this.particles.push(particle);
+    // let particleSprite = new PIXI.Graphics();
+    // particleSprite.fill(0x0000ff);
+    // particleSprite.circle(this.PlayerSprite.x, this.PlayerSprite.y, 3);
+    // particleSprite.fill();
+    // this.viewport.addChild(particleSprite);
+  }
+
+  updateParticles(delta) {
+
+    this.particles = this.particles.filter(particle => particle.lifetime > 0);
+
+    for (let i = 0; i < this.particles.length; i++) {
+      this.particles[i].update(delta);
+    }
+    
+
+  }
+ 
+  
 }

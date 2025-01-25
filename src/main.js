@@ -114,7 +114,7 @@ let oxygen_ui;
 const GameState = {
   score: 0,
   level: 1,
-  Player: new Player(player_sprite),
+  Player: new Player(player_sprite, viewport),
   Bubble: new Bubble(bubble_sprite),
   enemies: [],
   bullets: [],
@@ -277,6 +277,7 @@ function update(delta) {
       // player
       GameState.Player.move(delta, keys, mousePos, inBubble);
       GameState.Player.updateOxygen(delta, GameState.Bubble);
+      GameState.Player.updateParticles(delta);
 
       // enemies
       enemySpawner.update(delta);
