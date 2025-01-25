@@ -218,6 +218,8 @@ export class Player {
 
   generateDashParticles() {
     let lightness = this.oxygen/this.max_oxygen;
+    // let lightness be a chance that the particle isn't created
+    if (Math.random() * 0.5 > lightness) return;
     const particle = new DashParticle(this.viewport, this.PlayerSprite.x, this.PlayerSprite.y, lightness);
     this.particles.push(particle);
   }

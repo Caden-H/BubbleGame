@@ -31,7 +31,7 @@ class DashParticle {
 
     update(delta) {
 
-        this.sprite.alpha = this.lifetime/this.maxLifetime * this.lightness;
+        this.sprite.alpha = this.lifetime/this.maxLifetime * (this.lightness * 3);
         this.sprite.x += this.dx * delta.deltaTime;
         this.sprite.y += this.dy * delta.deltaTime;
 

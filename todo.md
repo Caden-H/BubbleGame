@@ -5,4 +5,4 @@
 - [ ] add dash animation+sfx on hit/whiff
 - [ ] maybe animations for enemy/player moving? idk might be hard
 - [ ] playtest/tune difficulty
-- [ ] make it so you don't dash when clicking menu buttons
+- [ ] you shouldn't be able to die while dashing in the bubble
