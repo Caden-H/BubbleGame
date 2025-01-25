@@ -8,6 +8,9 @@ export class EnemySpawner {
     this.bubble = bubble;
     this.player = player;
     this.enemyTexture = PIXI.Texture.WHITE; // placeholder
+    this.enemyTexture1 = PIXI.Texture.WHITE; // placeholder
+    this.enemyTexture2 = PIXI.Texture.WHITE; // placeholder
+    this.enemyTexture3 = PIXI.Texture.WHITE; // placeholder
 
     this.enemies = [];
     this.reset()
@@ -83,7 +86,14 @@ export class EnemySpawner {
     }
 
     // Create new enemy
-    const enemy = new Enemy(this.enemyTexture, x, y, damage, oxygen, health);
+    let enemy;
+    if (health == 1) {
+      enemy = new Enemy(this.enemyTexture1, x, y, damage, oxygen, health);
+    } else if (health == 2) {
+      enemy = new Enemy(this.enemyTexture2, x, y, damage, oxygen, health);
+    } else if (health >= 3) {
+      enemy = new Enemy(this.enemyTexture3, x, y, damage, oxygen, health);
+    }
     this.viewport.addChild(enemy.sprite);
     this.enemies.push(enemy);
   }

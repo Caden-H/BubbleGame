@@ -112,8 +112,14 @@ const GameState = {
 };
 
 const enemyTexture = await PIXI.Assets.load("raw-assets/images/fish-svgrepo-com.svg");
+const enemyTexture1 = await PIXI.Assets.load("raw-assets/images/Fish1.svg");
+const enemyTexture2 = await PIXI.Assets.load("raw-assets/images/Fish2.svg");
+const enemyTexture3 = await PIXI.Assets.load("raw-assets/images/Fish3.svg");
 const enemySpawner = new EnemySpawner(app, viewport, GameState.Bubble, GameState.Player);
 enemySpawner.enemyTexture = enemyTexture;
+enemySpawner.enemyTexture1 = enemyTexture1;
+enemySpawner.enemyTexture2 = enemyTexture2;
+enemySpawner.enemyTexture3 = enemyTexture3;
 
 // Center viewport on circle
 viewport.moveCenter(bubble_sprite);

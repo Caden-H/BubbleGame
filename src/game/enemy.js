@@ -4,7 +4,7 @@ export class Enemy {
   constructor(texture, startX, startY, damage, oxygen, health) {
     this.sprite = new PIXI.Sprite(texture);
     this.sprite.anchor.set(0.5);
-    this.sprite.scale = 0.1;
+    this.sprite.scale = 1;
     this.sprite.x = startX;
     this.sprite.y = startY;
 
@@ -35,7 +35,7 @@ export class Enemy {
       const ny = dy / dist;
 
       const angle = Math.atan2(ny, nx);
-      this.sprite.rotation = angle + Math.PI;
+      this.sprite.rotation = angle + Math.PI / 2;
       
       this.sprite.x += nx * this.speed * delta.elapsedMS / 1000;
       this.sprite.y += ny * this.speed * delta.elapsedMS / 1000;
