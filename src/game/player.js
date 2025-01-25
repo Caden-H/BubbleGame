@@ -3,7 +3,7 @@ export class Player {
   constructor(PlayerSprite) {
     this.PlayerSprite = PlayerSprite;
     this.PlayerSprite.scale = 0.1;
-    this.bubble_speed = 10;
+    this.bubble_speed = 5;
     this.water_speed = 1;
     this.in_bubble = true;
 

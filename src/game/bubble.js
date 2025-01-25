@@ -7,9 +7,12 @@ export class Bubble {
     this.radius = 10;
   }
 
+  get_position() {
+    return this.BubbleSprite.getGlobalPosition();
+  }
+
   contains(x, y) {
     const bubbleCenter = this.BubbleSprite.getGlobalPosition();
-    console.log(bubbleCenter, this.radius, x, y)
     const dx = x - bubbleCenter.x;
     const dy = y - bubbleCenter.y;
     const dist = Math.sqrt(dx * dx + dy * dy);

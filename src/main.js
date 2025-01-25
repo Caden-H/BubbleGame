@@ -4,6 +4,7 @@ import * as pixi_viewport from "pixi-viewport";
 
 import { Player } from "./game/player.js";
 import { Bubble } from "./game/bubble.js";
+import { EnemySpawner } from "./game/enemy_spawner.js";
 
 // set screen width and height variables to the window size
 var screenWidth = window.innerWidth;
@@ -41,8 +42,6 @@ const player_sprite = PIXI.Sprite.from("raw-assets/images/Black_triangle.svg");
 player_sprite.anchor.set(0.5); // Set the anchor to the center of the sprite
 viewport.addChild(player_sprite);
 
-
-
 const GameState = {
   score: 0,
   level: 1,
@@ -52,6 +51,13 @@ const GameState = {
   bullets: [],
   // Add more properties as needed
 };
+
+const enemyTexture = await PIXI.Assets.load("raw-assets/images/fish-svgrepo-com.svg");
+
+const enemySpawner = new EnemySpawner(app, viewport, GameState.Bubble, GameState.Player);
+
+// Replace the placeholder texture with your actual enemy image
+enemySpawner.enemyTexture = enemyTexture;
 
 
 
@@ -91,6 +97,8 @@ function update(delta) {
   const player_in_bubble = GameState.Bubble.contains(player_position.x, player_position.y)
 
   GameState.Player.move(delta, keys, mousePos, player_in_bubble)
+
+  enemySpawner.update(delta);
 
 }
 
