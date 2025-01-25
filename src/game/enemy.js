@@ -16,6 +16,7 @@ export class Enemy {
     this.oxygen = oxygen;
     this.damage = damage; // per second
     this.health = health;
+    this.size_constant = 50;
 
     this.dead = false;
     this.viewport = viewport;
@@ -35,7 +36,7 @@ export class Enemy {
     const dy = bubbleCenter.y - position.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
 
-    if (dist > bubble.radius) {
+    if (dist > bubble.radius + this.size_constant) {
       const nx = dx / dist;
       const ny = dy / dist;
 
@@ -46,7 +47,7 @@ export class Enemy {
       this.sprite.y += ny * this.speed * delta.elapsedMS / 1000;
     }
 
-    if (dist <= bubble.radius) {
+    if (dist <= bubble.radius + this.size_constant) {
       bubble.change_oxygen(Math.min(-this.damage * delta.elapsedMS / 1000 - bubble.defense, 0));
     }
 
