@@ -99,15 +99,16 @@ bubble_sprite.anchor.set(0.5);
 viewport.addChild(bubble_sprite);
 
 // Player
-await PIXI.Assets.load("raw-assets/images/Black_triangle.svg");
-const player_sprite = PIXI.Sprite.from("raw-assets/images/Black_triangle.svg");
+await PIXI.Assets.load("raw-assets/images/player-top.png");
+const arm_sprite = PIXI.Sprite.from("raw-assets/images/player-top.png");
+arm_sprite.anchor.set(0.5);
+viewport.addChild(arm_sprite);
+
+await PIXI.Assets.load("raw-assets/images/player-body.png");
+const player_sprite = PIXI.Sprite.from("raw-assets/images/player-body.png");
 player_sprite.anchor.set(0.5);
 viewport.addChild(player_sprite);
 
-await PIXI.Assets.load("raw-assets/images/Dash.svg");
-const arm_sprite = PIXI.Sprite.from("raw-assets/images/Dash.svg");
-arm_sprite.anchor.set(0.5);
-player_sprite.addChild(arm_sprite);
 
 let oxygen_ui;
 
@@ -256,6 +257,7 @@ upgradeManager.onClose = () => {
 bubble_sprite.zIndex = 0;
 upgradeManager.stationContainer.zIndex = 1;
 player_sprite.zIndex = 2;
+arm_sprite.zIndex = 3;
 viewport.sortChildren();
 
 function gameLoop(delta) {
