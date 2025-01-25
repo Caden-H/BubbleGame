@@ -211,15 +211,22 @@ window.addEventListener("pointermove", (event) => {
   mousePos.y = event.y;
 });
 
+let paused = false;
+let other_mouse_click = true;
 // Mouse click => unify to dash with space
 window.addEventListener("mousedown", (e) => {
-  if (e.button === 0 && States.PLAYING) {
-    keys[" "] = true;
+  if (e.button === 0 && currentState == States.PLAYING && !paused && !other_mouse_click) {
+    console.log(currentState, paused, other_mouse_click)
+    keys["mouse_dash"] = true;
+  } else if (e.button === 0 && (currentState != States.PLAYING || paused)) {
+    other_mouse_click = true;
+    keys["mouse_dash"] = false;
   }
 });
 window.addEventListener("mouseup", (e) => {
   if (e.button === 0 && States.PLAYING) {
-    keys[" "] = false;
+    other_mouse_click = false;
+    keys["mouse_dash"] = false;
   }
 });
 
@@ -227,7 +234,6 @@ const upgradeManager = new UpgradeManager(app, GameState.Bubble, GameState.Playe
 viewport.addChild(upgradeManager.stationContainer);
 app.stage.addChild(upgradeManager.menuContainer);
 
-let paused = false;
 upgradeManager.onOpen = () => {
   bubbleAudio.volume = 0.5;
   waterAudio.volume = 0;
@@ -282,7 +288,7 @@ function gameLoop(delta) {
       keys.gpRY = ry;
 
       // Handle dash and restart button
-      keys[" "] = buttonA || buttonRT; // Dash with "A" (Xbox) or "Cross" (PS) or right trigger
+      keys["controller_dash"] = buttonA || buttonRT; // Dash with "A" (Xbox) or "Cross" (PS) or right trigger
 
       // Restart game when in GAMEOVER state
       if (currentState === States.GAMEOVER && buttonA) {
@@ -408,7 +414,6 @@ function resetGame() {
 
   setState(States.PLAYING);
 }
-
 app.ticker.add(gameLoop);
 
 let gamepadConnected = false;

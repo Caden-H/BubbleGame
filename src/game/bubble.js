@@ -8,7 +8,7 @@ export class Bubble {
     this.BubbleSprite.x = 0;
     this.BubbleSprite.y = 0;
     this.oxygen = 100;
-    this.oxygen_rate = 0.1;
+    this.oxygen_rate = 5; // per seconds
     this.base_radius = 10
     this.radius = 10;
     this.defense = 0;
@@ -27,7 +27,7 @@ export class Bubble {
   }
 
   grow(delta) {
-    this.change_oxygen(this.oxygen_rate * delta.deltaTime);
+    this.change_oxygen(this.oxygen_rate * delta.elapsedMS / 1000);
   }
 
   change_oxygen(amount) {
