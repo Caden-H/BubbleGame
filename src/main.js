@@ -88,8 +88,7 @@ function update(delta) {
   // console.log("Tick:", delta);
 
   // make the circle grow and shrink over time
-  GameState.Bubble.BubbleSprite.scale.x = 3.5 + 0.5 * Math.sin(Date.now() * 0.001);
-  GameState.Bubble.BubbleSprite.scale.y = 3.5 + 0.5 * Math.sin(Date.now() * 0.001);
+  GameState.Bubble.setScale(3.5 + 0.5 * Math.sin(Date.now() * 0.001));
 
 
   // Movement speed
