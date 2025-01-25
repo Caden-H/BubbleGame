@@ -15,8 +15,12 @@ document.body.appendChild(app.canvas);
 // const sprite = PIXI.Sprite.from("sample.png");
 // app.stage.addChild(sprite);
 
-
-
+// // Move the sprite back and forth
+// let elapsed = 0.0;
+// app.ticker.add((ticker) => {
+//   elapsed += ticker.deltaTime;
+//   sprite.x = 100.0 + Math.cos(elapsed / 50.0) * 100.0;
+// });
 
 // create viewport
 const viewport = new pixi_viewport.Viewport({
@@ -63,6 +67,43 @@ viewport.addChild(triangle);
 viewport.moveCenter(circle);
 
 // move the viewport with the arrow keys
+
+let keys = {};
+
+window.addEventListener("keydown", (event) => {
+  keys[event.key] = true;
+});
+
+window.addEventListener("keyup", (event) => {
+  keys[event.key] = false;
+});
+
+app.ticker.add(() => {
+  if (keys["ArrowUp"]) {
+    viewport.y += 10;
+  }
+  if (keys["ArrowDown"]) {
+    viewport.y -= 10;
+  }
+  if (keys["ArrowLeft"]) {
+    viewport.x += 10;
+  }
+  if (keys["ArrowRight"]) {
+    viewport.x -= 10;
+  }
+});
+
+// zoom in and out the viewport with 1 and 2 keys
+window.addEventListener("keydown", (event) => {
+  if (event.key === "1") {
+    viewport.scale.x *= 1.1;
+    viewport.scale.y *= 1.1;
+  }
+  if (event.key === "2") {
+    viewport.scale.x /= 1.1;
+    viewport.scale.y /= 1.1;
+  }
+});
 
 
 
