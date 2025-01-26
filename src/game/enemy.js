@@ -19,6 +19,7 @@ export class Enemy {
     this.size_constant = 50;
 
     this.dead = false;
+    this.hit = false;
     this.viewport = viewport;
   }
 

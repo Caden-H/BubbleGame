@@ -52,6 +52,8 @@ export class EnemySpawner {
 
       if (this.player.dashing) {
         this.checkDashCollision(enemy);
+      } else {
+        enemy.hit = false;
       }
     }
   }
@@ -110,9 +112,10 @@ export class EnemySpawner {
     const dy = enemy_pos.y - player_pos.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
 
-    if (dist <= collisionRadius) {
+    if (dist <= collisionRadius && !enemy.hit) {
       // "Kill" the enemy
       enemy.health -= this.player.dash_damage;
+      enemy.hit = true;
       if (enemy.health <= 0) {
         enemy.kill();
         this.player.dash_cancelable = true;

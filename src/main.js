@@ -92,12 +92,18 @@ startButton.on("pointerdown", () => {
   setState(States.PLAYING);
 });
 
-// Bubble
-await PIXI.Assets.load("raw-assets/images/bubble.svg");
-const bubble_sprite = PIXI.Sprite.from("raw-assets/images/bubble.svg");
-bubble_sprite.anchor.set(0.5);
-bubble_sprite.alpha = 0.5;
-viewport.addChild(bubble_sprite);
+// bubble
+const bubbleSVG = await PIXI.Assets.load({
+  src: 'raw-assets/images/bubble.svg',
+  data: {
+      parseAsGraphicsContext: true,
+  },
+});
+const bubble_graphics = new PIXI.Graphics(bubbleSVG)
+const bubble_bounds = bubble_graphics.getLocalBounds();
+bubble_graphics.pivot.set((bubble_bounds.x + bubble_bounds.width) / 2, (bubble_bounds.y + bubble_bounds.height) / 2);
+bubble_graphics.alpha = 0.5
+viewport.addChild(bubble_graphics)
 
 // Player
 await PIXI.Assets.load("raw-assets/images/player-top.png");
@@ -115,7 +121,7 @@ let oxygen_ui;
 
 const GameState = {
   Player: new Player(player_sprite, arm_sprite, viewport),
-  Bubble: new Bubble(bubble_sprite, viewport),
+  Bubble: new Bubble(bubble_graphics, viewport),
 };
 
 const enemyTexture1 = await PIXI.Assets.load("raw-assets/images/Fish1.svg");
@@ -132,7 +138,7 @@ enemySpawner.enemyTexture2 = enemyTexture2;
 enemySpawner.enemyTexture3 = enemyTexture3;
 
 // Center viewport on circle
-viewport.moveCenter(bubble_sprite);
+viewport.moveCenter(bubble_graphics);
 
 const gameOverBg = new PIXI.Graphics();
 gameOverBg.fill(fstyle);
@@ -238,7 +244,7 @@ window.addEventListener("mouseup", (e) => {
 await PIXI.Assets.load("raw-assets/images/tree.svg");
 const upgrade_sprite = PIXI.Sprite.from("raw-assets/images/tree.svg");
 upgrade_sprite.anchor.set(0.5);
-viewport.addChild(bubble_sprite);
+viewport.addChild(upgrade_sprite);
 
 const upgradeManager = new UpgradeManager(
   app,
@@ -263,7 +269,7 @@ upgradeManager.onClose = () => {
   mouse_needed = false;
 };
 
-bubble_sprite.zIndex = 4;
+bubble_graphics.zIndex = 4;
 upgradeManager.stationContainer.zIndex = 1;
 player_sprite.zIndex = 2;
 arm_sprite.zIndex = 3;

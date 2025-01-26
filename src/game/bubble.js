@@ -17,7 +17,7 @@ export class Bubble {
     this.base_radius = 10;
     this.radius = 10;
     this.defense = 0;
-    this.scale_constant = 1 / 9;
+    this.scale_constant = 1/10;
   }
 
   get_position() {
@@ -25,7 +25,7 @@ export class Bubble {
   }
 
   contains(x, y) {
-    const bubbleCenter = this.BubbleSprite.getGlobalPosition();
+    const bubbleCenter = this.get_position();
     const dx = x - bubbleCenter.x;
     const dy = y - bubbleCenter.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -48,7 +48,7 @@ export class Bubble {
   change_oxygen(amount) {
     this.oxygen += amount;
     this.BubbleSprite.scale = Math.sqrt(this.oxygen + 30) * this.scale_constant;
-    this.radius = this.base_radius * Math.sqrt(this.oxygen + 30);
+    this.radius = this.BubbleSprite.height / 2;
 
     // if (amount > 0) {
     //   // create a bubble particle that floats outward from the middle of the bubble

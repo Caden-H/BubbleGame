@@ -198,11 +198,12 @@ export class Player {
     } else {
       this.dash_combo = 0;
     }
-    const randomIndex = Math.floor(Math.random() * this.dash_audios.length);
-    const randomAudio = this.dash_audios[randomIndex];
-    randomAudio.currentTime = 0;
-    randomAudio.play();
-    if (this.dash_combo > 0 ) {
+    if (this.dash_combo == 0 ) {
+      const randomIndex = Math.floor(Math.random() * this.dash_audios.length);
+      const randomAudio = this.dash_audios[randomIndex];
+      randomAudio.currentTime = 0;
+      randomAudio.play();
+    } else if (this.dash_combo > 0 ) {
       const comboIndex = Math.min(this.dash_combo - 1, 3);
       const comboAudio = this.combo_audios[comboIndex];
       comboAudio.currentTime = 0;
