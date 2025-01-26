@@ -4,7 +4,7 @@ import * as pixi_viewport from "pixi-viewport";
 import { Player } from "./game/player.js";
 import { Bubble } from "./game/bubble.js";
 import { EnemySpawner } from "./game/enemy_spawner.js";
-import { OxygenUI } from "./game/oxygen_ui.js";
+import { TopUI } from "./game/top_ui.js";
 import { UpgradeManager } from "./game/upgrades.js";
 
 const States = {
@@ -117,7 +117,7 @@ player_sprite.anchor.set(0.5);
 viewport.addChild(player_sprite);
 
 
-let oxygen_ui;
+let top_ui;
 
 const GameState = {
   Player: new Player(player_sprite, arm_sprite, viewport),
@@ -186,18 +186,18 @@ introAudio.volume = 0.5;
 
 const bubbleAudio = new Audio("raw-assets/audio/bubble.wav");
 bubbleAudio.loop = true;
-bubbleAudio.volume = 1.0;
+bubbleAudio.volume = 0.5;
 
 const waterAudio = new Audio("raw-assets/audio/water.wav");
 waterAudio.loop = true;
 waterAudio.volume = 0.0;
 
-const popAudio = new Audio("raw-assets/audio/pop.mp3");
+const popAudio = new Audio("raw-assets/audio/pop.wav");
 popAudio.loop = false;
 
-let bubbleVolume = 1.0;
+let bubbleVolume = 0.5;
 let waterVolume = 0.0;
-const fadeSpeed = 0.05;
+const fadeSpeed = 0.025;
 
 let introAudioStarted = false;
 function onFirstMouseDown() {
@@ -256,24 +256,44 @@ viewport.addChild(upgradeManager.stationContainer);
 app.stage.addChild(upgradeManager.menuContainer);
 
 upgradeManager.onOpen = () => {
-  bubbleAudio.volume = 0.5;
-  waterAudio.volume = 0;
   paused = true;
   mouse_needed = true;
   other_mouse_click = true;
+  waterAudio.volume = 0
+  fadeAudio(bubbleAudio, bubbleAudio.volume, 0.25, 250);
 };
 upgradeManager.onClose = () => {
-  bubbleAudio.volume = 1;
+  fadeAudio(bubbleAudio, bubbleAudio.volume, 0.5, 100);
+  bubbleAudio.volume = 0.5;
   waterAudio.volume = 0;
   paused = false;
   mouse_needed = false;
 };
+
+function fadeAudio(audioElement, startVolume, endVolume, duration) {
+  const intervalTime = 10;
+  const step = (endVolume - startVolume) * (intervalTime / duration);
+  audioElement.volume = startVolume;
+
+  const interval = setInterval(() => {
+    // Increment volume until it reaches or exceeds endVolume
+    if ((step > 0 && audioElement.volume < endVolume) ||
+        (step < 0 && audioElement.volume > endVolume)) {
+      audioElement.volume += step;
+    } else {
+      // Ensure volume does not exceed boundaries
+      audioElement.volume = endVolume;
+      clearInterval(interval); // Stop the interval
+    }
+  }, intervalTime);
+}
 
 bubble_graphics.zIndex = 4;
 upgradeManager.stationContainer.zIndex = 1;
 player_sprite.zIndex = 2;
 arm_sprite.zIndex = 3;
 viewport.sortChildren();
+let wait_for_a_release = false;
 
 function gameLoop(delta) {
   // Poll gamepad
@@ -294,7 +314,11 @@ function gameLoop(delta) {
 
       // Buttons: A (Xbox) / Cross (PS) is buttons[0]; Right Trigger is buttons[7]
       const buttonA = gp.buttons[0]?.pressed || false; // A on Xbox / Cross on PS
+      const buttonB = gp.buttons[1]?.pressed || false; // A on Xbox / Cross on PS
       const buttonRT = gp.buttons[7]?.pressed || false; // Right Trigger
+      const buttonR = gp.buttons[5]?.pressed || false; // Right Bumper
+      const buttonLT = gp.buttons[6]?.pressed || false; // Left Trigger
+      const buttonL = gp.buttons[4]?.pressed || false; // Left Bumper
 
       // Dead zone function
       function applyDeadZone(ax, ay, deadZone = 0.1) {
@@ -312,13 +336,26 @@ function gameLoop(delta) {
       keys.gpRX = rx;
       keys.gpRY = ry;
 
-      // Handle dash and restart button
-      keys["controller_dash"] = buttonA || buttonRT; // Dash with "A" (Xbox) or "Cross" (PS) or right trigger
-
+      if (wait_for_a_release && !buttonA) {
+        wait_for_a_release = false
+      }
+      if (currentState === States.INTRO && buttonA) {
+        wait_for_a_release = true
+        setState(States.PLAYING)
+      }
       // Restart game when in GAMEOVER state
       if (currentState === States.GAMEOVER && buttonA) {
-        resetGame();
+        wait_for_a_release = true
+        resetGame()
       }
+
+      if (!wait_for_a_release) {
+        keys["controller_a"] = buttonA
+      } else {
+        keys["controller_a"] = false;
+      }
+      keys["controller_b"] = buttonB
+      keys["controller_dash"] = buttonRT || buttonR || buttonLT || buttonL;
     }
   } else {
     // No gamepad
@@ -331,7 +368,7 @@ function gameLoop(delta) {
   if (!paused) {
     update(delta);
   } else {
-    if (keys["c"]) {
+    if (keys["c"] || keys["controller_b"]) {
       upgradeManager.closeMenu();
       paused = false;
     }
@@ -348,9 +385,11 @@ function update(delta) {
 
     case States.PLAYING:
       mouse_needed = false;
-      if (!oxygen_ui) {
-        oxygen_ui = new OxygenUI(app, screenWidth);
+
+      if (!top_ui) {
+        top_ui = new TopUI(app, screenWidth);
       }
+
       // Bubble
       GameState.Bubble.update(delta);
       const pos = GameState.Player.get_position();
@@ -365,20 +404,22 @@ function update(delta) {
       enemySpawner.update(delta);
 
       // Upgrades
-      upgradeManager.update(delta, keys, oxygen_ui);
+      upgradeManager.update(delta, keys, top_ui);
 
       // UI
-      oxygen_ui.update(GameState.Player, GameState.Bubble);
+      top_ui.update(GameState.Player, GameState.Bubble, delta);
 
       // Crossfade bubble/water
-      let targetBubble = inBubble ? 1.0 : 0.0;
-      let targetWater = 1.0 - targetBubble;
-      bubbleVolume += (targetBubble - bubbleVolume) * fadeSpeed;
-      waterVolume += (targetWater - waterVolume) * fadeSpeed;
-      bubbleVolume = Math.max(0, Math.min(1, bubbleVolume));
-      waterVolume = Math.max(0, Math.min(1, waterVolume));
-      bubbleAudio.volume = bubbleVolume;
-      waterAudio.volume = waterVolume;
+      if (!paused) {
+        let targetBubble = inBubble ? 0.5 : 0.0;
+        let targetWater = 0.5 - targetBubble;
+        bubbleVolume += (targetBubble - bubbleVolume) * fadeSpeed;
+        waterVolume += (targetWater - waterVolume) * fadeSpeed;
+        bubbleVolume = Math.max(0, Math.min(1, bubbleVolume));
+        waterVolume = Math.max(0, Math.min(1, waterVolume));
+        bubbleAudio.volume = bubbleVolume;
+        waterAudio.volume = waterVolume;
+      }
 
       // Lose condition
       if (
@@ -438,8 +479,9 @@ function resetGame() {
   GameState.Player.reset();
   enemySpawner.reset();
   upgradeManager.reset();
+  top_ui.igt = 0;
 
-  bubbleVolume = 1.0;
+  bubbleVolume = 0.5;
   waterVolume = 0.0;
   bubbleAudio.play();
   waterAudio.play();

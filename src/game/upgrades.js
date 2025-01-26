@@ -37,7 +37,7 @@ export class UpgradeManager {
     this.sprite.scale = 0.5;
     this.bubble = bubble;
     this.player = player;
-    this.oxygen_ui = null;
+    this.top_ui = null;
 
     //////////////////////////////////////////////////////////////////
     // (1) STATION CONTAINER
@@ -120,7 +120,6 @@ export class UpgradeManager {
     // Initialize + create buttons
     this._initUpgrades();      // sets this.upgrades array
     this._createUpgradeButtons(); // builds the actual UI
-    this.active = false;       // used to track if we can open menu
   }
 
   //////////////////////////////////////////////////////////////////
@@ -150,7 +149,7 @@ export class UpgradeManager {
       new Upgrade("Faster O2 transfer",   "Player & bubble exchange O2 faster", 100, (b, p) => { p.oxygen_transfer_rate += 0.5; }),
       new Upgrade("Faster Speed in bubble","Player moves faster in bubble", 100, (b, p) => { p.bubble_speed += 120; }),
       new Upgrade("More Dash damage",     "Increases dash damage vs. enemies", 100, (b, p) => { p.dash_damage += 1; }),
-      new Upgrade("Longer Dash distance", "Dash covers more ground",       100, (b, p) => { p.dash_length += 50; }),
+      new Upgrade("Longer Dash distance", "Dash covers more ground",       100, (b, p) => { p.dash_length += 100; }),
       new Upgrade("Bigger Oxygen tank",   "Increase player's max oxygen",  100, (b, p) => { p.max_oxygen += 10; }),
       new Upgrade("Less O2 used per dash","Reduces oxygen dash cost",      100, (b, p) => { p.dash_cost = Math.max(0, p.dash_cost * 0.9); }),
     ];
@@ -171,19 +170,11 @@ export class UpgradeManager {
     }
   }
 
-  /**
-   * (6) Create a single upgrade button container
-   * 
-   * Here we preserve your EXACT lines for:
-   *   buttonBg.beginFill(0x222288, 0.5) / buttonBg.drawRect(...) / buttonBg.endFill()
-   *   new PIXI.Text(`${upgrade.name} (Cost: ${upgrade.cost})`, textStyle)
-   */
   _createUpgradeButton(upgrade) {
     const container = new PIXI.Container();
     container.interactive = true;
     container.buttonMode = true;
 
-    // Keep your EXACT background shape lines:
     const buttonBg = new PIXI.Graphics();
     const fstyle = new PIXI.toFillStyle(0x222288, 0.5);
     buttonBg.fill(fstyle);
@@ -191,7 +182,6 @@ export class UpgradeManager {
     buttonBg.fill();
     container.addChild(buttonBg);
 
-    // Keep your EXACT text creation lines:
     const textStyle = new PIXI.TextStyle({
       fontSize: 16,
       fill: 0xD3D3D3,
@@ -210,8 +200,9 @@ export class UpgradeManager {
       const cost = container.upgrade.cost;
       if (this.bubble.oxygen >= cost) {
         container.upgrade.buy(this.bubble, this.player);
-        if (this.oxygen_ui) {
-          this.oxygen_ui.update(this.player, this.bubble);
+        if (this.top_ui) {
+          let delta = {elapsedMS: 0};
+          this.top_ui.update(this.player, this.bubble, delta);
         }
         // Update cost text
         container.labelText.text = `${container.upgrade.name} (Cost: ${container.upgrade.cost})`;
@@ -235,31 +226,23 @@ export class UpgradeManager {
   _highlightIfAffordable(buttonContainer) {
     const cost = buttonContainer.upgrade.cost;
     if (this.bubble.oxygen >= cost) {
-      buttonContainer.buttonBg.tint = 0x55ff55; // greenish highlight
+      buttonContainer.tint = 0x55ff55; // greenish highlight
     } else {
-      buttonContainer.buttonBg.tint = 0xffffff;
+      buttonContainer.tint = 0xffffff;
     }
   }
 
   /**
    * Called every frame from your main game loop for proximity check, etc.
    */
-  update(delta, keys, oxygen_ui) {
-    if (!this.oxygen_ui) {
-      this.oxygen_ui = oxygen_ui;
+  update(delta, keys, top_ui) {
+    if (!this.top_ui) {
+      this.top_ui = top_ui;
     }
-    const player_pos = this.player.get_position();
-    const station_pos = this.stationContainer.getGlobalPosition();
-    const dx = player_pos.x - station_pos.x;
-    const dy = player_pos.y - station_pos.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
 
     // If the player is close & presses "b", open the menu
-    if (dist < 40 && keys["b"]) {
+    if (this.player.in_bubble && (keys["b"] || keys["controller_a"])) {
       this.openMenu();
-      this.active = false;
-    } else if (dist > 40) {
-      this.active = true;
     }
   }
 

@@ -12,7 +12,7 @@ export class Enemy {
     this.sprite.x = startX;
     this.sprite.y = startY;
 
-    this.speed = 50; // per second
+    this.speed = 100; // per second
     this.oxygen = oxygen;
     this.damage = damage; // per second
     this.health = health;
@@ -30,14 +30,19 @@ export class Enemy {
   update(delta, bubble) {
     if (this.dead) this.kill();
 
-    let position = this.sprite.getGlobalPosition()
+    const position = this.get_position()
 
-    const bubbleCenter = bubble.BubbleSprite.getGlobalPosition();
+    const bubbleCenter = bubble.get_position();
     const dx = bubbleCenter.x - position.x;
     const dy = bubbleCenter.y - position.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
+    
+    const aheadX = position.x + Math.cos(this.sprite.rotation - Math.PI / 2) * 70 * this.viewport.scaled;
+    const aheadY = position.y + Math.sin(this.sprite.rotation - Math.PI / 2) * 70 * this.viewport.scaled;
 
-    if (dist > bubble.radius + this.size_constant) {
+    const at_bubble = bubble.contains(aheadX, aheadY)
+
+    if (!at_bubble) {
       const nx = dx / dist;
       const ny = dy / dist;
 
@@ -48,7 +53,7 @@ export class Enemy {
       this.sprite.y += ny * this.speed * delta.elapsedMS / 1000;
     }
 
-    if (dist <= bubble.radius + this.size_constant) {
+    if (at_bubble) {
       bubble.change_oxygen(Math.min(-this.damage * delta.elapsedMS / 1000 - bubble.defense, 0));
     }
 

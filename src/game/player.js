@@ -11,11 +11,12 @@ export class Player {
     this.reset();
     this.viewport = viewport;
     this.particles = [];
+    this.using_gamepad = false;
 
     this.dash_audios = [];
     for (let i = 1; i <= 4; i++) {
       const dashAud = new Audio(`raw-assets/audio/dash${i}.wav`);
-      dashAud.volume = 0.2;
+      dashAud.volume = 0.1;
       this.dash_audios.push(dashAud);
     }
     this.combo_audios = [];
@@ -49,7 +50,6 @@ export class Player {
     this.dash_damage = 1;
     this.dash_combo = 0;
 
-    this.dash_speed = (2 * this.dash_length) / this.dash_cooldown;
     this.current_dash_cooldown = 0;
     this.dashing = false;
     this.dash_cancelable = false;
@@ -58,6 +58,7 @@ export class Player {
     this.released_controller = false;
     this.dash_dir_x = 0;
     this.dash_dir_y = 0;
+    this.let_hold_dash_cancel = false;
 
     this.oxygen = 10;
     this.max_oxygen = 20;
@@ -110,10 +111,12 @@ export class Player {
 
       // Apply movement
       if (this.dx_conch != 0 || this.dy_conch != 0) {
+        this.using_gamepad = true;
         this.PlayerSprite.x += this.dx_conch * speed * delta.elapsedMS / 1000;
         this.PlayerSprite.y += this.dy_conch * speed * delta.elapsedMS / 1000;
 
-      } else {
+      } else if (this.dx_key != 0 || this.dy_key != 0){
+        this.using_gamepad = false;
         this.PlayerSprite.x += this.dx_key * speed * delta.elapsedMS / 1000;
         this.PlayerSprite.y += this.dy_key * speed * delta.elapsedMS / 1000;
       }
@@ -144,7 +147,7 @@ export class Player {
       } else if (this.dx_conch !== 0 || this.dy_conch !== 0){
         // Left stick aiming
         this.ArmSprite.rotation = Math.atan2(this.dy_conch, this.dx_conch) + Math.PI / 2;
-      } else {
+      } else if (!this.using_gamepad) {
         // Fallback to mouse aim
         const playerPos = this.PlayerSprite.getGlobalPosition();
         const mx = mousePos.x - playerPos.x;
@@ -170,18 +173,24 @@ export class Player {
       // If dash (space/trigger/mouse) is pressed and was previously released
       if ((keys[" "]) &&
         ((this.released_space && this.dash_cancelable) ||
+        (this.let_hold_dash_cancel && this.dash_cancelable) ||
         !this.dash_cancelable)) {
+          this.using_gamepad = false;
           this.released_space = false;
           this.startDash(mousePos, keys);
         } else if ((keys["controller_dash"]) &&
         ((this.released_controller && this.dash_cancelable) ||
+        (this.let_hold_dash_cancel && this.dash_cancelable) ||
         !this.dash_cancelable)) {
+          this.using_gamepad = true;
           this.released_controller = false;
           this.startDash(mousePos, keys);
         } else if ((keys["mouse_dash"]) &&
         ((this.released_mouse && this.dash_cancelable) ||
+        (this.let_hold_dash_cancel && this.dash_cancelable) ||
         !this.dash_cancelable)
       ) {
+        this.using_gamepad = false;
         this.released_mouse = false;
         this.startDash(mousePos, keys);
       } else if (this.dashing) {
@@ -203,12 +212,13 @@ export class Player {
       const randomAudio = this.dash_audios[randomIndex];
       randomAudio.currentTime = 0;
       randomAudio.play();
-    } else if (this.dash_combo > 0 ) {
-      const comboIndex = Math.min(this.dash_combo - 1, 3);
-      const comboAudio = this.combo_audios[comboIndex];
-      comboAudio.currentTime = 0;
-      comboAudio.play();
-  }
+    }
+    // } else if (this.dash_combo > 0 ) {
+    //   const comboIndex = Math.min(this.dash_combo - 1, 3);
+    //   const comboAudio = this.combo_audios[comboIndex];
+    //   comboAudio.currentTime = 0;
+    //   comboAudio.play();
+    // }
 
     this.dashing = true;
     this.current_dash_cooldown = this.dash_cooldown;
@@ -266,7 +276,9 @@ export class Player {
   updateDash(delta) {
     // Fraction of dash cooldown left
     const fraction = this.current_dash_cooldown / this.dash_cooldown;
-    const currentSpeed = Math.max(this.dash_speed * fraction, this.water_speed);
+    
+    const dash_speed = (2 * this.dash_length) / this.dash_cooldown;
+    const currentSpeed = Math.max(dash_speed * fraction, this.water_speed);
 
     // Move player
     this.PlayerSprite.x += this.dash_dir_x * currentSpeed * delta.elapsedMS / 1000;

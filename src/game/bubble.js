@@ -47,8 +47,8 @@ export class Bubble {
 
   change_oxygen(amount) {
     this.oxygen += amount;
-    this.BubbleSprite.scale = Math.sqrt(this.oxygen + 30) * this.scale_constant;
-    this.radius = this.BubbleSprite.height / 2;
+    this.BubbleSprite.scale = Math.sqrt(this.oxygen + 8) * this.scale_constant;
+    this.radius = this.BubbleSprite.height * this.viewport.scaled / 2;
 
     // if (amount > 0) {
     //   // create a bubble particle that floats outward from the middle of the bubble

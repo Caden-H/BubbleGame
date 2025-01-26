@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
 
-export class OxygenUI {
+export class TopUI {
     constructor(app, screenWidth) {
         // player oxygen display
         const barContainer = new PIXI.Container();
@@ -34,9 +34,22 @@ export class OxygenUI {
         this.bubbleO2Text.x = screenWidth - 200;
         this.bubbleO2Text.y = 20;
         app.stage.addChild(this.bubbleO2Text);
+
+        // timer
+        this.igt = 0;
+        const timerStyle = new PIXI.TextStyle({
+          fontFamily: 'Arial',
+          fontSize: 24,
+          fill: '#ffffff'
+        });
+        this.timerText = new PIXI.Text({text: "Time: 0:00", style: timerStyle});
+        this.timerText.anchor.set(0.5, 0);
+        this.timerText.x = screenWidth / 2;
+        this.timerText.y = 20;
+        app.stage.addChild(this.timerText);
     }
 
-    update(player, bubble) {
+    update(player, bubble, delta) {
         this.darkBar.clear();
         this.lightBar.clear();
       
@@ -63,5 +76,12 @@ export class OxygenUI {
         }
 
         this.bubbleO2Text.text = `Oxygen: ${parseInt(bubble.oxygen.toFixed(1))}`;
+
+        
+        this.igt += delta.elapsedMS / 1000
+        const minutes = Math.floor(this.igt / 60);
+        const seconds = Math.floor(this.igt % 60);
+        this.timerText.text = `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
     }
 }
