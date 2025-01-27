@@ -44,7 +44,7 @@ export class Player {
     this.dy_key = 0;
     this.dy_conch = 0;
 
-    this.dash_length = 150;
+    this.dash_length = 200;
     this.dash_cooldown = 0.5; // seconds
     this.dash_cost = 1;
     this.dash_damage = 1;
@@ -252,7 +252,7 @@ export class Player {
         // Dash in the direction we're moving/facing
         dashX = this.dx_conch;
         dashY = this.dy_conch;
-      } else {
+      } else if (!this.using_gamepad) {
         // Fallback to mouse aim
         // (Remove this if you want 100% ignore of mouse when a controller is connected)
         const playerPos = this.PlayerSprite.getGlobalPosition();
