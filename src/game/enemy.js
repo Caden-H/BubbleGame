@@ -54,7 +54,7 @@ export class Enemy {
     }
 
     if (at_bubble) {
-      bubble.change_oxygen(Math.min(-this.damage * delta.elapsedMS / 1000 - bubble.defense, 0));
+      bubble.change_oxygen(Math.min((bubble.defense-this.damage) * delta.elapsedMS / 1000, 0));
     }
 
     // run update() on all particles
@@ -73,7 +73,7 @@ export class Enemy {
 
     let tempx = this.sprite.x;
     let tempy = this.sprite.y;
-    for (let i = 0; i < Math.random() * 50 + 50; i++) {
+    for (let i = 0; i < Math.random() * 10 + 10; i++) {
       let particle = new EnemyParticle(this.viewport, tempx, tempy);
       enemy_particles.push(particle);
     }

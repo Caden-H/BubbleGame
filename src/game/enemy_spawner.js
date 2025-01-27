@@ -22,6 +22,10 @@ export class EnemySpawner {
       });
       this.enemies = [];
 
+      this.group_size = 10
+      this.enemies_left_in_group = 0;
+      this.group_angle = 0;
+
       this.spawnTimer = 0;
       this.intitialSpawnInterval = 1 // in seconds
       this.spawnInterval = this.intitialSpawnInterval;
@@ -62,7 +66,14 @@ export class EnemySpawner {
   spawnEnemy(damage, oxygen, health) {
     const spawnRadius = 2000;
   
-    const angle = Math.random() * 2 * Math.PI;
+    if (this.enemies_left_in_group <= 0) {
+      this.group_angle = Math.random() * 2 * Math.PI;
+      this.enemies_left_in_group = this.group_size;
+    } else {
+      this.enemies_left_in_group-= 1;
+    }
+
+    const angle = this.group_angle + Math.random() / 2;
     const radius = spawnRadius + Math.random() * 100;
   
     const bubble_x = this.bubble.BubbleSprite.x;
