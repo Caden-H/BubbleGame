@@ -21,27 +21,50 @@ export class EnemySpawner {
         e.sprite.destroy();
       });
       this.enemies = [];
+      this.enemy_groups = [];
+
+      this.spawnRadius = 2000
 
       this.group_size = 10
-      this.enemies_left_in_group = 0;
-      this.group_angle = 0;
 
       this.spawnTimer = 0;
       this.intitialSpawnInterval = 1 // in seconds
       this.spawnInterval = this.intitialSpawnInterval;
+
+      this.groupTimer = 5;
+      this.initialGroupInterval = 5;
+      this.groupInterval = this.initialGroupInterval;
       this.total_seconds = 0;
   }
 
   update(delta) {
     this.spawnTimer += delta.elapsedMS / 1000;
+    this.groupTimer += delta.elapsedMS / 1000;
     this.total_seconds += delta.elapsedMS / 1000;
     this.spawnInterval = 0.9 ** Math.floor(this.total_seconds / 30) * this.intitialSpawnInterval;
+
+    if (this.groupTimer > this.groupInterval) {
+      this.groupTimer = 0;
+      const angle = Math.random() * 2 * Math.PI;
+      const group_size = this.group_size / 2 + Math.floor(this.group_size * Math.random())
+      const group = {enemies_left: group_size, angle: angle}
+      this.enemy_groups.push(group)
+    }
+
     if (this.spawnTimer >= this.spawnInterval) {
       this.spawnTimer = 0;
       let damage = Math.ceil(this.total_seconds / 60) * 3
       let oxygen = Math.ceil(this.total_seconds / 60)
       let health = Math.ceil(this.total_seconds / 60)
-      this.spawnEnemy(damage, oxygen, health);
+      
+      for (let i = this.enemy_groups.length - 1; i >= 0; i--) {
+        if (this.enemy_groups[i].enemies_left > 0) {
+          this.spawnEnemy(damage, oxygen, health, this.enemy_groups[i].angle);
+          this.enemy_groups[i].enemies_left -= 1;
+        } else {
+          this.enemy_groups.splice(i, 1);
+        }
+      }
     }
 
     for (let i = this.enemies.length - 1; i >= 0; i--) {
@@ -65,18 +88,9 @@ export class EnemySpawner {
     this.handleEnemyCollisions();
   }
 
-  spawnEnemy(damage, oxygen, health) {
-    const spawnRadius = 2000;
-  
-    if (this.enemies_left_in_group <= 0) {
-      this.group_angle = Math.random() * 2 * Math.PI;
-      this.enemies_left_in_group = this.group_size;
-    } else {
-      this.enemies_left_in_group-= 1;
-    }
-
-    const angle = this.group_angle + Math.random() / 2;
-    const radius = spawnRadius + Math.random() * 100;
+  spawnEnemy(damage, oxygen, health, group_angle) {
+    const angle = group_angle + Math.random() / 2;
+    const radius = this.spawnRadius + Math.random() * 100;
   
     const bubble_x = this.bubble.BubbleSprite.x;
     const bubble_y = this.bubble.BubbleSprite.y;

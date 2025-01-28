@@ -30,7 +30,7 @@ const viewport = new pixi_viewport.Viewport({
   events: app.renderer.events,
 });
 viewport.sortableChildren = true;
-viewport.drag().pinch().wheel().decelerate();
+viewport.wheel();
 
 const introContainer = new PIXI.Container();
 introContainer.visible = true;

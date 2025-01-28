@@ -5,9 +5,9 @@ import DashParticle from "./dash_particles";
 export class Player {
   constructor(PlayerSprite, ArmSprite, viewport) {
     this.PlayerSprite = PlayerSprite;
-    this.PlayerSprite.scale = 0.2;
+    this.PlayerSprite.scale = 0.4;
     this.ArmSprite = ArmSprite;
-    this.ArmSprite.scale = 0.2;
+    this.ArmSprite.scale = 0.4;
     this.reset();
     this.viewport = viewport;
     this.particles = [];
@@ -30,6 +30,8 @@ export class Player {
   reset() {
     this.PlayerSprite.x = 0;
     this.PlayerSprite.y = 0;
+    this.last_x = 0;
+    this.last_y = 0;
 
     this.ArmSprite.x = 0;
     this.ArmSprite.y = 0;
@@ -42,7 +44,8 @@ export class Player {
     this.dy_conch = 0;
 
     this.dash_length = 200;
-    this.dash_cooldown = 0.5; // seconds
+    this.dash_cooldown = 0.25; // seconds
+    this.dash_endlag = 0.25;
     this.dash_cost = 1;
     this.dash_damage = 1;
     this.dash_combo = 0;
@@ -63,16 +66,20 @@ export class Player {
     this.oxygen_use_rate = 2;     // per second
 
     this.bubble_speed = 500; // per second
-    this.water_speed = 200;   // per second
+    this.water_speed = 100;   // per second
 
     this.use_momentum = true;
+    this.water_control = 10;
     this.momentum_x = 0;
     this.momentum_y = 0;
-    this.max_water_speed = 10 * this.water_speed; // Maximum speed when in water
-    this.m_dash_constant = 2;
-    this.friction = 10;
-    this.dash_friction = 0;
-    this.post_dash_friction = this.dash_length * 3/8;
+
+    this.dash_momentum_mult = 1;
+    this.dash_friction = 10;
+    this.dash_cooldown_friction = 5;
+    this.dash_momentum_store = 1/2;
+
+    this.max_water_speed = 5 * this.water_speed; // Maximum speed when in water
+    this.friction = 5;
     this.bubble_friction = 200;
   }
 
@@ -94,7 +101,6 @@ export class Player {
     const speed = this.in_bubble ? this.bubble_speed : this.water_speed;
 
     // If we're not in a dash or it's cancelable, we can move normally
-    if (!this.dashing || this.dash_cancelable) {
       // Reset dx, dy
       this.dx_key = 0;
       this.dx_conch = 0;
@@ -145,9 +151,35 @@ export class Player {
         this.PlayerSprite.x += move_x
         this.PlayerSprite.y += move_y
       } else {
-        this.momentum_x += move_x
-        this.momentum_y += move_y
+        const currentMomentumMag = Math.sqrt(this.momentum_x * this.momentum_x + this.momentum_y * this.momentum_y);
+        if (move_x !== 0 || move_y !== 0) {
+          if (currentMomentumMag < this.water_speed) {
+              this.momentum_x = move_x * this.water_speed;
+              this.momentum_y = move_y * this.water_speed;
+          } else {
+              const dot = (this.momentum_x * move_x + this.momentum_y * move_y) / currentMomentumMag;
+              const angle = Math.acos(Math.min(Math.max(dot, -1), 1));
+              
+              if (angle > 0.01) {
+                  const swing_x = move_x * this.water_control;
+                  const swing_y = move_y * this.water_control;
+                  this.momentum_x += swing_x;
+                  this.momentum_y += swing_y;
+                  
+                  const newMag = Math.sqrt(this.momentum_x * this.momentum_x + this.momentum_y * this.momentum_y);
+                  if (newMag > 0) {
+                      this.momentum_x = (this.momentum_x / newMag) * Math.min(Math.max(newMag, this.water_speed), currentMomentumMag);
+                      this.momentum_y = (this.momentum_y / newMag) * Math.min(Math.max(newMag, this.water_speed), currentMomentumMag);
+                  }
+              }
+          }
       }
+
+      // Apply momentum to player position
+      this.PlayerSprite.x += this.momentum_x * delta.elapsedMS / 1000;
+      this.PlayerSprite.y += this.momentum_y * delta.elapsedMS / 1000;
+    }
+    if (!this.dashing || this.dash_cancelable) {
       // === Dash Input Check ===
       // If not pressing dash, record that space was released
       if (!keys[" "]) {
@@ -178,11 +210,10 @@ export class Player {
         } else if ((keys["mouse_dash"]) &&
         ((this.released_mouse && this.dash_cancelable) ||
         (this.let_hold_dash_cancel && this.dash_cancelable) ||
-        !this.dash_cancelable)
-      ) {
-        this.using_gamepad = false;
-        this.released_mouse = false;
-        this.startDash(mousePos, keys);
+        !this.dash_cancelable)) {
+          this.using_gamepad = false;
+          this.released_mouse = false;
+          this.startDash(mousePos, keys);
       } else if (this.dashing) {
         this.updateDash(delta);
       }
@@ -211,7 +242,7 @@ export class Player {
     // }
 
     this.dashing = true;
-    this.current_dash_cooldown = this.dash_cooldown;
+    this.current_dash_cooldown = this.dash_cooldown + this.dash_endlag;
 
     // Oxygen cost
     if (this.dash_cancelable) {
@@ -258,27 +289,27 @@ export class Player {
     this.dash_dir_x = dashX;
     this.dash_dir_y = dashY;
 
-    const mag = Math.sqrt(this.momentum_x ** 2 + this.momentum_y ** 2)
-    this.momentum_x = mag * this.dash_dir_x
-    this.momentum_y = mag * this.dash_dir_y
+    if (this.use_momentum) {
+      const mag = Math.sqrt(this.momentum_x ** 2 + this.momentum_y ** 2)
+      this.momentum_x = this.dash_dir_x * this.dash_length * this.dash_momentum_mult + this.dash_dir_x * mag * this.dash_momentum_store
+      this.momentum_y = this.dash_dir_y * this.dash_length * this.dash_momentum_mult + this.dash_dir_y * mag * this.dash_momentum_store
+    }
   }
 
   updateDash(delta) {
-    const fraction = Math.max(this.current_dash_cooldown / (this.dash_cooldown / 2) - 1, 0);
+    let fraction = 0;
+    if (this.current_dash_cooldown > this.dash_endlag) {
+      fraction = (this.current_dash_cooldown - this.dash_endlag) / this.dash_cooldown;
+    }
     
-    const dash_speed = (2 * this.dash_length) / (this.dash_cooldown / 2);
+    const dash_speed = (2 * this.dash_length) / (this.dash_cooldown);
     const currentSpeed = dash_speed * fraction;
     const move_x = this.dash_dir_x * currentSpeed * delta.elapsedMS / 1000;
     const move_y = this.dash_dir_y * currentSpeed * delta.elapsedMS / 1000;
 
     // Move player
-    if (this.in_bubble || !this.use_momentum) {
-      this.PlayerSprite.x += move_x;
-      this.PlayerSprite.y += move_y;
-    } else {
-      this.momentum_x += move_x * this.m_dash_constant;
-      this.momentum_y += move_y * this.m_dash_constant;
-    }
+    this.PlayerSprite.x += move_x;
+    this.PlayerSprite.y += move_y;
 
     this.generateDashParticles();
 
@@ -292,20 +323,28 @@ export class Player {
   }
 
   handle_momentum(delta) {
-    let friction = this.friction
+    let friction = this.friction;
     if (this.in_bubble) {
-      friction = this.bubble_friction
-    } else if (this.current_dash_cooldown >= this.dash_cooldown / 2) {
-      friction = this.dash_friction
+      friction = this.bubble_friction;
     } else if (this.dashing) {
-      friction = this.post_dash_friction;
+      if (this.current_dash_cooldown < this.dash_endlag) {
+        friction = this.dash_cooldown_friction;
+      } else {
+        friction = this.dash_friction;
+      }
     }
     const mx = Math.max(Math.abs(this.momentum_x) - Math.sqrt(Math.abs(this.momentum_x)) * friction * delta.elapsedMS / 1000, 0)
     const my = Math.max(Math.abs(this.momentum_y) - Math.sqrt(Math.abs(this.momentum_y)) * friction * delta.elapsedMS / 1000, 0)
-    let mag = Math.sqrt(mx * mx + my * my)
-    if (mag < 1) {mag = 1}
-    this.momentum_x = Math.sign(this.momentum_x) * Math.min(mx, mx / mag * this.max_water_speed)
-    this.momentum_y = Math.sign(this.momentum_y) * Math.min(my, my / mag * this.max_water_speed)
+
+    if (this.dashing) {
+      this.momentum_x = Math.sign(this.momentum_x) * mx
+      this.momentum_y = Math.sign(this.momentum_y) * my
+    } else {
+      let mag = Math.sqrt(mx * mx + my * my)
+      if (mag < 1) {mag = 1}
+      this.momentum_x = Math.sign(this.momentum_x) * Math.min(mx, mx / mag * this.max_water_speed)
+      this.momentum_y = Math.sign(this.momentum_y) * Math.min(my, my / mag * this.max_water_speed)
+    }
     console.log(this.momentum_x, this.momentum_y)
     this.PlayerSprite.x += this.momentum_x * delta.elapsedMS / 1000;
     this.PlayerSprite.y += this.momentum_y * delta.elapsedMS / 1000;
@@ -318,24 +357,13 @@ export class Player {
     const rx = keys.gpRX || 0;
     const ry = keys.gpRY || 0;
 
-    if (this.in_bubble || !this.use_momentum) {
-      if (!this.dashing) {
-        if (this.dx_conch !== 0 || this.dy_conch !== 0) {
-          // Face direction of conch movement
-          const angle = Math.atan2(this.dy_conch, this.dx_conch);
-          this.PlayerSprite.rotation = angle + Math.PI / 2;
-        } else if (this.dx_key !== 0 || this.dy_key !== 0) {
-          // Face direction of key movement
-          const angle = Math.atan2(this.dy_key, this.dx_key);
-          this.PlayerSprite.rotation = angle + Math.PI / 2;
-        }
-      } else {
-        this.PlayerSprite.rotation = Math.atan2(this.dash_dir_y, this.dash_dir_x) + Math.PI / 2;
-      }
-    } else {
-      const angle = Math.atan2(this.momentum_y, this.momentum_x);
-      this.PlayerSprite.rotation = angle + Math.PI / 2;
+    const dx = this.PlayerSprite.y - this.last_y
+    const dy = this.PlayerSprite.x - this.last_x
+    
+    if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
+    this.PlayerSprite.rotation = Math.atan2(dx, dy) + Math.PI / 2;
     }
+
     const magR = Math.sqrt(rx * rx + ry * ry);
     if (magR > 0.01) {
       // Right stick aiming
@@ -353,6 +381,9 @@ export class Player {
         this.ArmSprite.rotation = Math.atan2(my, mx) + Math.PI / 2;
       }
     }
+
+    this.last_x = this.PlayerSprite.x
+    this.last_y = this.PlayerSprite.y
   }
 
   updateOxygen(delta, bubble) {
