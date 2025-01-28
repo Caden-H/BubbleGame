@@ -57,8 +57,8 @@ export class Player {
     this.dash_dir_y = 0;
     this.let_hold_dash_cancel = false;
 
-    this.oxygen = 1000;
-    this.max_oxygen = 2000;
+    this.oxygen = 10;
+    this.max_oxygen = 20;
     this.oxygen_transfer_rate = 1; // per second
     this.oxygen_use_rate = 2;     // per second
 
@@ -70,8 +70,8 @@ export class Player {
     this.m_dash_constant = 2;
     this.friction = 10;
     this.dash_friction = 0;
-    this.post_dash_friction = 75;
-    this.bubble_friction = 100;
+    this.post_dash_friction = this.dash_length * 3/8;
+    this.bubble_friction = 200;
   }
 
   update(delta, keys, mousePos, bubble, inBubble) {
