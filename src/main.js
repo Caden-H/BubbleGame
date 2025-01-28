@@ -98,14 +98,14 @@ bubble_sprite.alpha = 0.5
 viewport.addChild(bubble_sprite)
 
 // Player
-await PIXI.Assets.load("raw-assets/images/player-top.png");
-const arm_sprite = PIXI.Sprite.from("raw-assets/images/player-top.png");
-arm_sprite.anchor.set(0.5);
+const player_top_texture = await PIXI.Assets.load({src: "raw-assets/images/player-top.svg", data: {resolution: 10}});
+const arm_sprite = PIXI.Sprite.from(player_top_texture);
+arm_sprite.anchor.set(0.5, 0.725);
 viewport.addChild(arm_sprite);
 
-await PIXI.Assets.load("raw-assets/images/player-body.png");
-const player_sprite = PIXI.Sprite.from("raw-assets/images/player-body.png");
-player_sprite.anchor.set(0.5);
+const player_body_texture = await PIXI.Assets.load({src: "raw-assets/images/player-body.svg", data: {resolution: 10}});
+const player_sprite = PIXI.Sprite.from(player_body_texture);
+player_sprite.anchor.set(0.5, 0.25);
 viewport.addChild(player_sprite);
 
 
