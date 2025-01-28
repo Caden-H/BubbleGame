@@ -34,9 +34,6 @@ export class Player {
     this.ArmSprite.x = 0;
     this.ArmSprite.y = 0;
 
-    this.bubble_speed = 500; // per second
-    this.water_speed = 200;   // per second
-
     this.in_bubble = true;
 
     this.dx_key = 0;
@@ -60,10 +57,29 @@ export class Player {
     this.dash_dir_y = 0;
     this.let_hold_dash_cancel = false;
 
-    this.oxygen = 10;
-    this.max_oxygen = 20;
+    this.oxygen = 1000;
+    this.max_oxygen = 2000;
     this.oxygen_transfer_rate = 1; // per second
     this.oxygen_use_rate = 2;     // per second
+
+    this.bubble_speed = 500; // per second
+    this.water_speed = 200;   // per second
+    this.momentum_x = 0;
+    this.momentum_y = 0;
+    this.max_water_speed = 10 * this.water_speed; // Maximum speed when in water
+    this.m_dash_constant = 2;
+    this.friction = 10;
+    this.dash_friction = 0;
+    this.post_dash_friction = 75;
+    this.bubble_friction = 100;
+  }
+
+  update(delta, keys, mousePos, bubble, inBubble) {
+    this.move(delta, keys, mousePos, inBubble);
+    this.handle_momentum(delta);
+    this.updateSprite(keys, mousePos);
+    this.updateOxygen(delta, bubble);
+    this.updateParticles(delta);
   }
 
   get_position() {
@@ -109,55 +125,27 @@ export class Player {
         this.dy_conch /= mag;
       }
 
+      let move_x = 0;
+      let move_y = 0;
       // Apply movement
       if (this.dx_conch != 0 || this.dy_conch != 0) {
         this.using_gamepad = true;
-        this.PlayerSprite.x += this.dx_conch * speed * delta.elapsedMS / 1000;
-        this.PlayerSprite.y += this.dy_conch * speed * delta.elapsedMS / 1000;
+        move_x = this.dx_conch * speed * delta.elapsedMS / 1000;
+        move_y = this.dy_conch * speed * delta.elapsedMS / 1000;
 
       } else if (this.dx_key != 0 || this.dy_key != 0){
         this.using_gamepad = false;
-        this.PlayerSprite.x += this.dx_key * speed * delta.elapsedMS / 1000;
-        this.PlayerSprite.y += this.dy_key * speed * delta.elapsedMS / 1000;
+        move_x = this.dx_key * speed * delta.elapsedMS / 1000;
+        move_y = this.dy_key * speed * delta.elapsedMS / 1000;
       }
-      this.ArmSprite.x = this.PlayerSprite.x
-      this.ArmSprite.y = this.PlayerSprite.y
-
-      // === Rotation (facing) ===
-      // If the right stick is tilted, face that direction. 
-      // Otherwise, if left stick is moving, face movement direction.
-      const rx = keys.gpRX || 0;
-      const ry = keys.gpRY || 0;
-      const magR = Math.sqrt(rx * rx + ry * ry);
-
       
-      if (this.dx_conch !== 0 || this.dy_conch !== 0) {
-        // Face direction of conch movement
-        const angle = Math.atan2(this.dy_conch, this.dx_conch);
-        this.PlayerSprite.rotation = angle + Math.PI / 2;
-      } else if (this.dx_key !== 0 || this.dy_key !== 0) {
-        // Face direction of key movement
-        const angle = Math.atan2(this.dy_key, this.dx_key);
-        this.PlayerSprite.rotation = angle + Math.PI / 2;
+      if (this.in_bubble) {
+        this.PlayerSprite.x += move_x
+        this.PlayerSprite.y += move_y
+      } else {
+        this.momentum_x += move_x
+        this.momentum_y += move_y
       }
-
-      if (magR > 0.01) {
-        // Right stick aiming
-        this.ArmSprite.rotation = Math.atan2(ry, rx) + Math.PI / 2;
-      } else if (this.dx_conch !== 0 || this.dy_conch !== 0){
-        // Left stick aiming
-        this.ArmSprite.rotation = Math.atan2(this.dy_conch, this.dx_conch) + Math.PI / 2;
-      } else if (!this.using_gamepad) {
-        // Fallback to mouse aim
-        const playerPos = this.PlayerSprite.getGlobalPosition();
-        const mx = mousePos.x - playerPos.x;
-        const my = mousePos.y - playerPos.y;
-        const magM = Math.sqrt(mx * mx + my * my);
-        if (magM > 0) {
-          this.ArmSprite.rotation = Math.atan2(my, mx) + Math.PI / 2;
-        }
-      }
-
       // === Dash Input Check ===
       // If not pressing dash, record that space was released
       if (!keys[" "]) {
@@ -254,7 +242,6 @@ export class Player {
         dashY = this.dy_conch;
       } else if (!this.using_gamepad) {
         // Fallback to mouse aim
-        // (Remove this if you want 100% ignore of mouse when a controller is connected)
         const playerPos = this.PlayerSprite.getGlobalPosition();
         dashX = mousePos.x - playerPos.x;
         dashY = mousePos.y - playerPos.y;
@@ -269,22 +256,27 @@ export class Player {
     this.dash_dir_x = dashX;
     this.dash_dir_y = dashY;
 
-    // Rotate sprite to dash direction
-    this.PlayerSprite.rotation = Math.atan2(dashY, dashX) + Math.PI / 2;
+    const mag = Math.sqrt(this.momentum_x ** 2 + this.momentum_y ** 2)
+    this.momentum_x = mag * this.dash_dir_x
+    this.momentum_y = mag * this.dash_dir_y
   }
 
   updateDash(delta) {
-    // Fraction of dash cooldown left
-    const fraction = this.current_dash_cooldown / this.dash_cooldown;
+    const fraction = Math.max(this.current_dash_cooldown / (this.dash_cooldown / 2) - 1, 0);
     
-    const dash_speed = (2 * this.dash_length) / this.dash_cooldown;
-    const currentSpeed = Math.max(dash_speed * fraction, this.water_speed);
+    const dash_speed = (2 * this.dash_length) / (this.dash_cooldown / 2);
+    const currentSpeed = dash_speed * fraction;
+    const move_x = this.dash_dir_x * currentSpeed * delta.elapsedMS / 1000;
+    const move_y = this.dash_dir_y * currentSpeed * delta.elapsedMS / 1000;
 
     // Move player
-    this.PlayerSprite.x += this.dash_dir_x * currentSpeed * delta.elapsedMS / 1000;
-    this.PlayerSprite.y += this.dash_dir_y * currentSpeed * delta.elapsedMS / 1000;
-    this.ArmSprite.x = this.PlayerSprite.x
-    this.ArmSprite.y = this.PlayerSprite.y
+    if (this.in_bubble) {
+      this.PlayerSprite.x += move_x;
+      this.PlayerSprite.y += move_y;
+    } else {
+      this.momentum_x += move_x * this.m_dash_constant;
+      this.momentum_y += move_y * this.m_dash_constant;
+    }
 
     this.generateDashParticles();
 
@@ -294,6 +286,70 @@ export class Player {
       this.dashing = false;
       this.dash_cancelable = false;
       this.current_dash_cooldown = 0;
+    }
+  }
+
+  handle_momentum(delta) {
+    let friction = this.friction
+    if (this.in_bubble) {
+      friction = this.bubble_friction
+    } else if (this.current_dash_cooldown >= this.dash_cooldown / 2) {
+      friction = this.dash_friction
+    } else if (this.dashing) {
+      friction = this.post_dash_friction;
+    }
+    const mx = Math.max(Math.abs(this.momentum_x) - Math.sqrt(Math.abs(this.momentum_x)) * friction * delta.elapsedMS / 1000, 0)
+    const my = Math.max(Math.abs(this.momentum_y) - Math.sqrt(Math.abs(this.momentum_y)) * friction * delta.elapsedMS / 1000, 0)
+    let mag = Math.sqrt(mx * mx + my * my)
+    if (mag < 1) {mag = 1}
+    this.momentum_x = Math.sign(this.momentum_x) * Math.min(mx, mx / mag * this.max_water_speed)
+    this.momentum_y = Math.sign(this.momentum_y) * Math.min(my, my / mag * this.max_water_speed)
+    console.log(this.momentum_x, this.momentum_y)
+    this.PlayerSprite.x += this.momentum_x * delta.elapsedMS / 1000;
+    this.PlayerSprite.y += this.momentum_y * delta.elapsedMS / 1000;
+  }
+
+  updateSprite(keys, mousePos) {
+    this.ArmSprite.x = this.PlayerSprite.x
+    this.ArmSprite.y = this.PlayerSprite.y
+
+    const rx = keys.gpRX || 0;
+    const ry = keys.gpRY || 0;
+
+    if (this.in_bubble) {
+      if (!this.dashing) {
+        if (this.dx_conch !== 0 || this.dy_conch !== 0) {
+          // Face direction of conch movement
+          const angle = Math.atan2(this.dy_conch, this.dx_conch);
+          this.PlayerSprite.rotation = angle + Math.PI / 2;
+        } else if (this.dx_key !== 0 || this.dy_key !== 0) {
+          // Face direction of key movement
+          const angle = Math.atan2(this.dy_key, this.dx_key);
+          this.PlayerSprite.rotation = angle + Math.PI / 2;
+        }
+      } else {
+        this.PlayerSprite.rotation = Math.atan2(this.dash_dir_y, this.dash_dir_x) + Math.PI / 2;
+      }
+    } else {
+      const angle = Math.atan2(this.momentum_y, this.momentum_x);
+      this.PlayerSprite.rotation = angle + Math.PI / 2;
+    }
+    const magR = Math.sqrt(rx * rx + ry * ry);
+    if (magR > 0.01) {
+      // Right stick aiming
+      this.ArmSprite.rotation = Math.atan2(ry, rx) + Math.PI / 2;
+    } else if (this.dx_conch !== 0 || this.dy_conch !== 0){
+      // Left stick aiming
+      this.ArmSprite.rotation = Math.atan2(this.dy_conch, this.dx_conch) + Math.PI / 2;
+    } else if (!this.using_gamepad) {
+      // Fallback to mouse aim
+      const playerPos = this.PlayerSprite.getGlobalPosition();
+      const mx = mousePos.x - playerPos.x;
+      const my = mousePos.y - playerPos.y;
+      const magM = Math.sqrt(mx * mx + my * my);
+      if (magM > 0) {
+        this.ArmSprite.rotation = Math.atan2(my, mx) + Math.PI / 2;
+      }
     }
   }
 

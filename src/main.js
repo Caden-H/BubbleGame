@@ -399,9 +399,7 @@ function update(delta) {
       const inBubble = GameState.Bubble.contains(pos.x, pos.y);
 
       // Player
-      GameState.Player.move(delta, keys, mousePos, inBubble);
-      GameState.Player.updateOxygen(delta, GameState.Bubble);
-      GameState.Player.updateParticles(delta);
+      GameState.Player.update(delta, keys, mousePos, GameState.Bubble, inBubble)
 
       // Enemies
       enemySpawner.update(delta);
