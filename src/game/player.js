@@ -64,6 +64,8 @@ export class Player {
 
     this.bubble_speed = 500; // per second
     this.water_speed = 200;   // per second
+
+    this.use_momentum = true;
     this.momentum_x = 0;
     this.momentum_y = 0;
     this.max_water_speed = 10 * this.water_speed; // Maximum speed when in water
@@ -139,7 +141,7 @@ export class Player {
         move_y = this.dy_key * speed * delta.elapsedMS / 1000;
       }
       
-      if (this.in_bubble) {
+      if (this.in_bubble || !this.use_momentum) {
         this.PlayerSprite.x += move_x
         this.PlayerSprite.y += move_y
       } else {
@@ -270,7 +272,7 @@ export class Player {
     const move_y = this.dash_dir_y * currentSpeed * delta.elapsedMS / 1000;
 
     // Move player
-    if (this.in_bubble) {
+    if (this.in_bubble || !this.use_momentum) {
       this.PlayerSprite.x += move_x;
       this.PlayerSprite.y += move_y;
     } else {
@@ -316,7 +318,7 @@ export class Player {
     const rx = keys.gpRX || 0;
     const ry = keys.gpRY || 0;
 
-    if (this.in_bubble) {
+    if (this.in_bubble || !this.use_momentum) {
       if (!this.dashing) {
         if (this.dx_conch !== 0 || this.dy_conch !== 0) {
           // Face direction of conch movement
