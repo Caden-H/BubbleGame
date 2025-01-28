@@ -1,8 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 357 357">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke-linecap: round;
+        stroke-width: 13px;
+      }
+
+      .cls-1, .cls-2 {
+        fill: #bee1f4;
+        stroke: #fff;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-2 {
+        stroke-width: 4px;
+      }
+    </style>
+  </defs>
   <g id="Layer_3" data-name="Layer 3">
-    <circle class="cls-2" cx="178.5" cy="178.5" r="176.5" fill="#bee1f4" stroke="#fff" stroke-width="4" stroke-miterlimit="10"/>
-    <path class="cls-1" d="m32.14,132.18c9.18-28.94,26.72-54.19,49.77-72.9" stroke-linecap="round" stroke-width="13" fill-opacity="0" stroke="#fff" stroke-miterlimit="10"/>
-    <path class="cls-1" d="m278.59,62.21c32.68,28.17,53.41,69.86,53.41,116.29,0,4.02-.16,8-.46,11.95" stroke-linecap="round" stroke-width="13" fill-opacity="0" stroke="#fff" stroke-miterlimit="10"/>
+    <circle class="cls-2" cx="178.5" cy="178.5" r="176.5"/>
+    <path class="cls-1" d="m32.14,132.18c9.18-28.94,26.72-54.19,49.77-72.9"/>
+    <path class="cls-1" d="m278.59,62.21c32.68,28.17,53.41,69.86,53.41,116.29,0,4.02-.16,8-.46,11.95"/>
   </g>
 </svg>

@@ -91,20 +91,11 @@ startButton.on("pointerdown", () => {
 });
 
 // bubble
-const bubbleSVG = await PIXI.Assets.load({
-  src: 'raw-assets/images/bubble.svg',
-  data: {
-      parseAsGraphicsContext: true,
-  },
-});
-bubbleSVG.instructions[1].data.style.cap = 'round'
-bubbleSVG.instructions[2].data.style.cap = 'round'
-bubbleSVG.instructions[3].data.style.cap = 'round'
-const bubble_graphics = new PIXI.Graphics(bubbleSVG)
-const bubble_bounds = bubble_graphics.getLocalBounds();
-bubble_graphics.pivot.set((bubble_bounds.x + bubble_bounds.width) / 2, (bubble_bounds.y + bubble_bounds.height) / 2);
-bubble_graphics.alpha = 0.5
-viewport.addChild(bubble_graphics)
+const bubble_texture = await PIXI.Assets.load({src: "raw-assets/images/Bubble.svg", data: {resolution: 10}});
+const bubble_sprite = PIXI.Sprite.from(bubble_texture);
+bubble_sprite.anchor.set(0.5);
+bubble_sprite.alpha = 0.5
+viewport.addChild(bubble_sprite)
 
 // Player
 await PIXI.Assets.load("raw-assets/images/player-top.png");
@@ -122,12 +113,12 @@ let top_ui;
 
 const GameState = {
   Player: new Player(player_sprite, arm_sprite, viewport),
-  Bubble: new Bubble(bubble_graphics, viewport),
+  Bubble: new Bubble(bubble_sprite, viewport),
 };
 
-const enemyTexture1 = await PIXI.Assets.load("raw-assets/images/Fish1.svg");
-const enemyTexture2 = await PIXI.Assets.load("raw-assets/images/Fish2.svg");
-const enemyTexture3 = await PIXI.Assets.load("raw-assets/images/Fish3.svg");
+const enemyTexture1 = await PIXI.Assets.load({src: "raw-assets/images/Fish1.svg", data: {resolution: 10}});
+const enemyTexture2 = await PIXI.Assets.load({src: "raw-assets/images/Fish2.svg", data: {resolution: 10}});
+const enemyTexture3 = await PIXI.Assets.load({src: "raw-assets/images/Fish3.svg", data: {resolution: 10}});
 const enemySpawner = new EnemySpawner(
   app,
   viewport,
@@ -139,7 +130,7 @@ enemySpawner.enemyTexture2 = enemyTexture2;
 enemySpawner.enemyTexture3 = enemyTexture3;
 
 // Center viewport on circle
-viewport.moveCenter(bubble_graphics);
+viewport.moveCenter(bubble_sprite);
 
 const gameOverBg = new PIXI.Graphics();
 gameOverBg.rect(0, 0, screenWidth, screenHeight);
@@ -240,8 +231,8 @@ window.addEventListener("mouseup", (e) => {
   }
 });
 
-await PIXI.Assets.load("raw-assets/images/tree.svg");
-const upgrade_sprite = PIXI.Sprite.from("raw-assets/images/tree.svg");
+const upgrade_texture = await PIXI.Assets.load({src: "raw-assets/images/tree.svg", data: {resolution: 50}});
+const upgrade_sprite = PIXI.Sprite.from(upgrade_texture);
 upgrade_sprite.anchor.set(0.5);
 viewport.addChild(upgrade_sprite);
 
@@ -287,7 +278,7 @@ function fadeAudio(audioElement, startVolume, endVolume, duration) {
   }, intervalTime);
 }
 
-bubble_graphics.zIndex = 4;
+bubble_sprite.zIndex = 4;
 upgradeManager.stationContainer.zIndex = 1;
 player_sprite.zIndex = 2;
 arm_sprite.zIndex = 3;

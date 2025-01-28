@@ -17,7 +17,7 @@ export class Bubble {
     this.base_radius = 10;
     this.radius = 10;
     this.defense = 0;
-    this.scale_constant = 1/10;
+    this.scale_constant = 1/5;
   }
 
   get_position() {
