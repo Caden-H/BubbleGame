@@ -14,14 +14,12 @@ class EnemyParticle {
 
         // big bubble color:#a74274
         //#a3ddff
-        this.sprite.fill(0xa74274);
-        this.sprite.fill(0xa74274);
         this.sprite.poly([
             this.startx, this.starty - 3,
             this.startx - 3, this.starty + 3,
             this.startx + 3, this.starty + 3
         ]);
-        this.sprite.fill();
+        this.sprite.fill(0xa74274);
         // randomly rotate the sprite around its center
         this.sprite.pivot.set(this.startx, this.starty);
         this.sprite.rotation = Math.random() * Math.PI * 2;

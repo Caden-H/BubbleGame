@@ -49,9 +49,8 @@ gameContainer.addChild(viewport);
 
 const introBg = new PIXI.Graphics();
 const fstyle = new PIXI.toFillStyle(0x000000, 0.75);
-introBg.fill(fstyle);
 introBg.rect(0, 0, screenWidth, screenHeight);
-introBg.fill();
+introBg.fill(fstyle);
 introContainer.addChild(introBg);
 
 const titleStyle = new PIXI.TextStyle({
@@ -71,9 +70,8 @@ startButton.interactive = true;
 startButton.buttonMode = true;
 
 const startButtonBg = new PIXI.Graphics();
-startButtonBg.fill(0x4444ff);
 startButtonBg.roundRect(0, 0, 200, 60, 10);
-startButtonBg.fill();
+startButtonBg.fill(0x4444ff);
 startButton.addChild(startButtonBg);
 
 const startTextStyle = new PIXI.TextStyle({
@@ -144,9 +142,8 @@ enemySpawner.enemyTexture3 = enemyTexture3;
 viewport.moveCenter(bubble_graphics);
 
 const gameOverBg = new PIXI.Graphics();
-gameOverBg.fill(fstyle);
 gameOverBg.rect(0, 0, screenWidth, screenHeight);
-gameOverBg.fill();
+gameOverBg.fill(fstyle);
 gameOverContainer.addChild(gameOverBg);
 
 const overTextStyle = new PIXI.TextStyle({
@@ -167,9 +164,8 @@ restartButton.buttonMode = true;
 gameOverContainer.addChild(restartButton);
 
 const restartButtonBg = new PIXI.Graphics();
-restartButtonBg.fill(0x228b22);
 restartButtonBg.roundRect(0, 0, 200, 60, 10);
-restartButtonBg.fill();
+restartButtonBg.fill(0x228b22);
 restartButton.addChild(restartButtonBg);
 
 const restartTextStyle = new PIXI.TextStyle({ fontSize: 24, fill: 0xffffff });

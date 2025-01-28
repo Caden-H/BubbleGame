@@ -69,9 +69,8 @@ export class UpgradeManager {
 
     // Dark blue background
     const menuBg = new PIXI.Graphics();
-    menuBg.fill(0x00008b);
     menuBg.rect(0, 0, 350, 400);
-    menuBg.fill();
+    menuBg.fill(0x00008b);
     this.menuContainer.addChild(menuBg);
 
     // Position near center of the screen
@@ -100,9 +99,8 @@ export class UpgradeManager {
     closeBtn.buttonMode = true;
 
     const closeBg = new PIXI.Graphics();
-    closeBg.fill(0x555555);
     closeBg.roundRect(0, 0, 80, 30, 5);
-    closeBg.fill();
+    closeBg.fill(0x555555);
     closeBtn.addChild(closeBg);
 
     const closeTxtStyle = new PIXI.TextStyle({ fontSize: 16, fill: 0xd3d3d3 });
@@ -177,9 +175,8 @@ export class UpgradeManager {
 
     const buttonBg = new PIXI.Graphics();
     const fstyle = new PIXI.toFillStyle(0x222288, 0.5);
-    buttonBg.fill(fstyle);
     buttonBg.rect(0, 0, 370, 30);
-    buttonBg.fill();
+    buttonBg.fill(fstyle);
     container.addChild(buttonBg);
 
     const textStyle = new PIXI.TextStyle({

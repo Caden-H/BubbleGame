@@ -12,9 +12,8 @@ class DashParticle {
 
         // big bubble color: #ADD8E6
         //#a3ddff
-        this.sprite.fill(0xADD8E6);
         this.sprite.circle(this.startx, this.starty, 3);
-        this.sprite.fill();
+        this.sprite.fill(0xADD8E6);
         this.viewport.addChild(this.sprite);
         // choose a random direction for the particle to move in
         this.dx = Math.random() * 2 - 1;

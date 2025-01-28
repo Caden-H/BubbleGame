@@ -12,9 +12,8 @@ export class TopUI {
         this.barHeight = 20;
 
         const barBg = new PIXI.Graphics();
-        barBg.fill(0x000000); // black
         barBg.rect(0, 0, this.barWidth, this.barHeight);
-        barBg.fill();
+        barBg.fill(0x000000); // black
         barContainer.addChild(barBg);
 
         this.darkBar = new PIXI.Graphics();
@@ -60,18 +59,16 @@ export class TopUI {
         const darkWidth = this.barWidth * fractionDark;
       
         if (darkWidth > 0) {
-          this.darkBar.fill(0x00008B); // dark blue
           this.darkBar.rect(0, 0, darkWidth, this.barHeight);
-          this.darkBar.fill();
+          this.darkBar.fill(0x00008B); // dark blue
         }
       
         if (fraction > 0.5) {
           const fractionLight = (fraction - 0.5) / 0.5;
           const lightWidth = this.barWidth * fractionLight;
       
-          this.lightBar.fill(0xD3D3D3); // light grey
           this.lightBar.rect(0, 0, lightWidth, this.barHeight);
-          this.lightBar.fill();
+          this.lightBar.fill(0xD3D3D3); // light grey
       
         }
 
