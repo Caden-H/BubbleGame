@@ -99,17 +99,13 @@ const bubbleSVG = await PIXI.Assets.load({
       parseAsGraphicsContext: true,
   },
 });
-console.log(bubbleSVG)
-//bubbleSVG._strokeStyle.cap = 'round';
 bubbleSVG.instructions[1].data.style.cap = 'round'
 bubbleSVG.instructions[2].data.style.cap = 'round'
 bubbleSVG.instructions[3].data.style.cap = 'round'
-console.log(bubbleSVG)
 const bubble_graphics = new PIXI.Graphics(bubbleSVG)
 const bubble_bounds = bubble_graphics.getLocalBounds();
 bubble_graphics.pivot.set((bubble_bounds.x + bubble_bounds.width) / 2, (bubble_bounds.y + bubble_bounds.height) / 2);
 bubble_graphics.alpha = 0.5
-console.log(bubble_graphics)
 viewport.addChild(bubble_graphics)
 
 // Player

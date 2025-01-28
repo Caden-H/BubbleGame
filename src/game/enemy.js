@@ -31,30 +31,37 @@ export class Enemy {
     if (this.dead) this.kill();
 
     const position = this.get_position()
-
     const bubbleCenter = bubble.get_position();
     const dx = bubbleCenter.x - position.x;
     const dy = bubbleCenter.y - position.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
+    const dist = bubble.distance_from_center(position.x, position.y)
     
     const aheadX = position.x + Math.cos(this.sprite.rotation - Math.PI / 2) * 70 * this.viewport.scaled;
     const aheadY = position.y + Math.sin(this.sprite.rotation - Math.PI / 2) * 70 * this.viewport.scaled;
 
-    const at_bubble = bubble.contains(aheadX, aheadY)
+    const radius = bubble.radius
+    let head_dist = bubble.distance_from_center(aheadX, aheadY)
+    
+    const nx = dx / dist;
+    const ny = dy / dist;
 
-    if (!at_bubble) {
-      const nx = dx / dist;
-      const ny = dy / dist;
+    const angle = Math.atan2(ny, nx);
+    this.sprite.rotation = angle + Math.PI / 2;
+    
 
-      const angle = Math.atan2(ny, nx);
-      this.sprite.rotation = angle + Math.PI / 2;
-      
+    if (head_dist > radius) {
       this.sprite.x += nx * this.speed * delta.elapsedMS / 1000;
       this.sprite.y += ny * this.speed * delta.elapsedMS / 1000;
     }
+    head_dist = bubble.distance_from_center(aheadX, aheadY)
 
-    if (at_bubble) {
+    if (head_dist <= radius) {
       bubble.change_oxygen(Math.min((bubble.defense-this.damage) * delta.elapsedMS / 1000, 0));
+
+      if (head_dist < radius) {
+        this.sprite.x -= nx * Math.min(this.speed, radius - head_dist) * delta.elapsedMS / 1000;
+        this.sprite.y -= ny * Math.min(this.speed, radius - head_dist) * delta.elapsedMS / 1000;
+      }
     }
 
     // run update() on all particles
@@ -65,6 +72,28 @@ export class Enemy {
         enemy_particles.splice(i, 1);
       }
     }
+    this.getCorners()
+  }
+
+  getCorners() {
+    const { x, y } = this.get_position();
+    const rotation = this.sprite.rotation;
+
+    const hw = this.sprite.width * this.viewport.scaled / 2;
+    const hh = this.sprite.height * this.viewport.scaled / 2;
+
+    const corners = [
+        { x: -hw, y: -hh },
+        { x: hw, y: -hh },
+        { x: hw, y: hh },
+        { x: -hw, y: hh },
+    ];
+
+    this.corners = corners.map(corner => {
+        const rotatedX = corner.x * Math.cos(rotation) - corner.y * Math.sin(rotation) + x;
+        const rotatedY = corner.x * Math.sin(rotation) + corner.y * Math.cos(rotation) + y;
+        return { x: rotatedX, y: rotatedY };
+    });
   }
 
   kill() {

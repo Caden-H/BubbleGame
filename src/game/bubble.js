@@ -32,6 +32,14 @@ export class Bubble {
     return dist <= this.radius;
   }
 
+  distance_from_center(x, y) {
+    const bubbleCenter = this.get_position();
+    const dx = x - bubbleCenter.x;
+    const dy = y - bubbleCenter.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    return dist;
+  }
+
   update(delta) {
     this.change_oxygen((this.oxygen_rate * delta.elapsedMS) / 1000);
 
