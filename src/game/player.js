@@ -100,6 +100,7 @@ export class Player {
     this.in_bubble = player_in_bubble;
     const speed = this.in_bubble ? this.bubble_speed : this.water_speed;
 
+    if (!this.dashing || this.dash_cancelable || this.current_dash_cooldown < this.dash_endlag) {
     // If we're not in a dash or it's cancelable, we can move normally
       // Reset dx, dy
       this.dx_key = 0;
@@ -147,34 +148,34 @@ export class Player {
         move_y = this.dy_key * speed * delta.elapsedMS / 1000;
       }
       
-      if (this.in_bubble || !this.use_momentum) {
-        this.PlayerSprite.x += move_x
-        this.PlayerSprite.y += move_y
-      } else {
-        const currentMomentumMag = Math.sqrt(this.momentum_x * this.momentum_x + this.momentum_y * this.momentum_y);
-        if (move_x !== 0 || move_y !== 0) {
-          if (currentMomentumMag < this.water_speed) {
-              this.momentum_x = move_x * this.water_speed;
-              this.momentum_y = move_y * this.water_speed;
-          } else {
-              const dot = (this.momentum_x * move_x + this.momentum_y * move_y) / currentMomentumMag;
-              const angle = Math.acos(Math.min(Math.max(dot, -1), 1));
+    if (this.in_bubble || !this.use_momentum) {
+      this.PlayerSprite.x += move_x
+      this.PlayerSprite.y += move_y
+    } else {
+      const currentMomentumMag = Math.sqrt(this.momentum_x * this.momentum_x + this.momentum_y * this.momentum_y);
+      if (move_x !== 0 || move_y !== 0) {
+        if (currentMomentumMag < this.water_speed) {
+            this.momentum_x = move_x * this.water_speed;
+            this.momentum_y = move_y * this.water_speed;
+        } else {
+            const dot = (this.momentum_x * move_x + this.momentum_y * move_y) / currentMomentumMag;
+            const angle = Math.acos(Math.min(Math.max(dot, -1), 1));
+            
+            if (angle > 0.01) {
+              const swing_x = move_x * this.water_control;
+              const swing_y = move_y * this.water_control;
+              this.momentum_x += swing_x;
+              this.momentum_y += swing_y;
               
-              if (angle > 0.01) {
-                  const swing_x = move_x * this.water_control;
-                  const swing_y = move_y * this.water_control;
-                  this.momentum_x += swing_x;
-                  this.momentum_y += swing_y;
-                  
-                  const newMag = Math.sqrt(this.momentum_x * this.momentum_x + this.momentum_y * this.momentum_y);
-                  if (newMag > 0) {
-                      this.momentum_x = (this.momentum_x / newMag) * Math.min(Math.max(newMag, this.water_speed), currentMomentumMag);
-                      this.momentum_y = (this.momentum_y / newMag) * Math.min(Math.max(newMag, this.water_speed), currentMomentumMag);
-                  }
+              const newMag = Math.sqrt(this.momentum_x * this.momentum_x + this.momentum_y * this.momentum_y);
+              if (newMag > 0) {
+                  this.momentum_x = (this.momentum_x / newMag) * Math.min(Math.max(newMag, this.water_speed), currentMomentumMag);
+                  this.momentum_y = (this.momentum_y / newMag) * Math.min(Math.max(newMag, this.water_speed), currentMomentumMag);
               }
+            }
           }
+        }
       }
-
       // Apply momentum to player position
       this.PlayerSprite.x += this.momentum_x * delta.elapsedMS / 1000;
       this.PlayerSprite.y += this.momentum_y * delta.elapsedMS / 1000;
