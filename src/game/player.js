@@ -2,6 +2,17 @@ import * as PIXI from "pixi.js";
 import * as pixi_viewport from "pixi-viewport";
 import DashParticle from "./dash_particles";
 
+
+import dash1AudioSrc from '../../raw-assets/audio/dash1.wav';
+import dash2AudioSrc from '../../raw-assets/audio/dash2.wav';
+import dash3AudioSrc from '../../raw-assets/audio/dash3.wav';
+import dash4AudioSrc from '../../raw-assets/audio/dash4.wav';
+
+import combo1AudioSrc from '../../raw-assets/audio/combo1.wav';
+import combo2AudioSrc from '../../raw-assets/audio/combo2.wav';
+import combo3AudioSrc from '../../raw-assets/audio/combo3.wav';
+import combo4AudioSrc from '../../raw-assets/audio/combo4.wav';
+
 export class Player {
   constructor(PlayerSprite, ArmSprite, viewport) {
     this.PlayerSprite = PlayerSprite;
@@ -13,18 +24,17 @@ export class Player {
     this.particles = [];
     this.using_gamepad = false;
 
-    this.dash_audios = [];
-    for (let i = 1; i <= 4; i++) {
-      const dashAud = new Audio(`raw-assets/audio/dash${i}.wav`);
-      dashAud.volume = 0.1;
-      this.dash_audios.push(dashAud);
-    }
-    this.combo_audios = [];
-    for (let i = 1; i <= 4; i++) {
-      const comboAud = new Audio(`raw-assets/audio/combo${i}.wav`);
-      comboAud.volume = 1;
-      this.combo_audios.push(comboAud);
-    }
+    this.dash_audios = [dash1AudioSrc, dash2AudioSrc, dash3AudioSrc, dash4AudioSrc].map(src => {
+      const audio = new Audio(src);
+      audio.volume = 0.1;
+      return audio;
+    });
+
+    this.combo_audios = [combo1AudioSrc, combo2AudioSrc, combo3AudioSrc, combo4AudioSrc].map(src => {
+      const audio = new Audio(src);
+      audio.volume = 1;
+      return audio;
+    });
   }
 
   reset() {
@@ -346,7 +356,6 @@ export class Player {
       this.momentum_x = Math.sign(this.momentum_x) * Math.min(mx, mx / mag * this.max_water_speed)
       this.momentum_y = Math.sign(this.momentum_y) * Math.min(my, my / mag * this.max_water_speed)
     }
-    console.log(this.momentum_x, this.momentum_y)
     this.PlayerSprite.x += this.momentum_x * delta.elapsedMS / 1000;
     this.PlayerSprite.y += this.momentum_y * delta.elapsedMS / 1000;
   }

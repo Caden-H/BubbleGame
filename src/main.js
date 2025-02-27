@@ -7,6 +7,21 @@ import { EnemySpawner } from "./game/enemy_spawner.js";
 import { TopUI } from "./game/top_ui.js";
 import { UpgradeManager } from "./game/upgrades.js";
 
+import bubbleSrc from '../raw-assets/images/bubble.svg?url';
+import ptopSrc from '../raw-assets/images/player-top.svg?url';
+import pbodySrc from '../raw-assets/images/player-body.svg?url';
+import fish1Src from '../raw-assets/images/Fish1.svg?url';
+import fish2Src from '../raw-assets/images/Fish2.svg?url';
+import fish3Src from '../raw-assets/images/Fish3.svg?url';
+import treeSrc from '../raw-assets/images/Tree.svg?url';
+
+import introAudioSrc from '../raw-assets/audio/intro.wav';
+import bubbleAudioSrc from '../raw-assets/audio/bubble.wav';
+import waterAudioSrc from '../raw-assets/audio/water.wav';
+import popAudioSrc from '../raw-assets/audio/pop.wav';
+
+(async () => {
+
 const States = {
   INTRO: "intro",
   PLAYING: "playing",
@@ -19,7 +34,7 @@ var screenHeight = window.innerHeight;
 
 const app = new PIXI.Application();
 await app.init({ background: "#60BFE0", resizeTo: window });
-document.body.appendChild(app.canvas);
+document.getElementById("pixi-container").appendChild(app.canvas);
 
 // Create viewport
 const viewport = new pixi_viewport.Viewport({
@@ -56,6 +71,7 @@ introContainer.addChild(introBg);
 const titleStyle = new PIXI.TextStyle({
   fontSize: 48,
   fill: 0xffffff,
+  fontWeight: 'bold',
 });
 const titleText = new PIXI.Text({ text: "Bubble Defender", style: titleStyle });
 titleText.anchor.set(0.5);
@@ -63,9 +79,19 @@ titleText.x = screenWidth / 2;
 titleText.y = screenHeight / 2 - 50;
 introContainer.addChild(titleText);
 
+const guideStyle = new PIXI.TextStyle({
+  fontSize: 24,
+  fill: 0xffffff,
+});
+const guideText = new PIXI.Text({ text: "Press SPACE or LEFT CLICK to dash, press B to open the buy menu.", style: guideStyle });
+guideText.anchor.set(0.5);
+guideText.x = screenWidth / 2;
+guideText.y = screenHeight / 2 + 0;
+introContainer.addChild(guideText);
+
 const startButton = new PIXI.Container();
 startButton.x = screenWidth / 2 - 100;
-startButton.y = screenHeight / 2 + 20;
+startButton.y = screenHeight / 2 + 30;
 startButton.interactive = true;
 startButton.buttonMode = true;
 
@@ -91,19 +117,19 @@ startButton.on("pointerdown", () => {
 });
 
 // bubble
-const bubble_texture = await PIXI.Assets.load({src: "raw-assets/images/Bubble.svg", data: {resolution: 10}});
+const bubble_texture = await PIXI.Assets.load({src: bubbleSrc, data: {resolution: 10}});
 const bubble_sprite = PIXI.Sprite.from(bubble_texture);
 bubble_sprite.anchor.set(0.5);
 bubble_sprite.alpha = 0.5
 viewport.addChild(bubble_sprite)
 
 // Player
-const player_top_texture = await PIXI.Assets.load({src: "raw-assets/images/player-top.svg", data: {resolution: 10}});
+const player_top_texture = await PIXI.Assets.load({src: ptopSrc, data: {resolution: 10}});
 const arm_sprite = PIXI.Sprite.from(player_top_texture);
 arm_sprite.anchor.set(0.5, 0.725);
 viewport.addChild(arm_sprite);
 
-const player_body_texture = await PIXI.Assets.load({src: "raw-assets/images/player-body.svg", data: {resolution: 10}});
+const player_body_texture = await PIXI.Assets.load({src: pbodySrc, data: {resolution: 10}});
 const player_sprite = PIXI.Sprite.from(player_body_texture);
 player_sprite.anchor.set(0.5, 0.25);
 viewport.addChild(player_sprite);
@@ -116,9 +142,9 @@ const GameState = {
   Bubble: new Bubble(bubble_sprite, viewport),
 };
 
-const enemyTexture1 = await PIXI.Assets.load({src: "raw-assets/images/Fish1.svg", data: {resolution: 10}});
-const enemyTexture2 = await PIXI.Assets.load({src: "raw-assets/images/Fish2.svg", data: {resolution: 10}});
-const enemyTexture3 = await PIXI.Assets.load({src: "raw-assets/images/Fish3.svg", data: {resolution: 10}});
+const enemyTexture1 = await PIXI.Assets.load({src: fish1Src, data: {resolution: 10}});
+const enemyTexture2 = await PIXI.Assets.load({src: fish2Src, data: {resolution: 10}});
+const enemyTexture3 = await PIXI.Assets.load({src: fish3Src, data: {resolution: 10}});
 const enemySpawner = new EnemySpawner(
   app,
   viewport,
@@ -170,19 +196,19 @@ restartButton.on("pointerdown", () => {
   resetGame();
 });
 
-const introAudio = new Audio("raw-assets/audio/intro.wav");
+const introAudio = new Audio(introAudioSrc);
 introAudio.loop = true;
 introAudio.volume = 0.5;
 
-const bubbleAudio = new Audio("raw-assets/audio/bubble.wav");
+const bubbleAudio = new Audio(bubbleAudioSrc);
 bubbleAudio.loop = true;
 bubbleAudio.volume = 0.5;
 
-const waterAudio = new Audio("raw-assets/audio/water.wav");
+const waterAudio = new Audio(waterAudioSrc);
 waterAudio.loop = true;
 waterAudio.volume = 0.0;
 
-const popAudio = new Audio("raw-assets/audio/pop.wav");
+const popAudio = new Audio(popAudioSrc);
 popAudio.loop = false;
 
 let bubbleVolume = 0.5;
@@ -231,7 +257,7 @@ window.addEventListener("mouseup", (e) => {
   }
 });
 
-const upgrade_texture = await PIXI.Assets.load({src: "raw-assets/images/tree.svg", data: {resolution: 50}});
+const upgrade_texture = await PIXI.Assets.load({src: treeSrc, data: {resolution: 50}});
 const upgrade_sprite = PIXI.Sprite.from(upgrade_texture);
 upgrade_sprite.anchor.set(0.5);
 viewport.addChild(upgrade_sprite);
@@ -487,3 +513,5 @@ window.addEventListener("gamepaddisconnected", (event) => {
   console.log("Gamepad disconnected:", event.gamepad);
   gamepadConnected = false;
 });
+
+})();

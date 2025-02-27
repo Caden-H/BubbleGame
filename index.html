@@ -3,20 +3,18 @@
   <head>
     <title>Bubble Defender</title>
     <link rel="icon" type="image/x-icon" href="raw-assets/images/bubble.svg">
-    <script src="https://pixijs.download/release/pixi.min.js"></script>
-    <!-- Include your main.js script here -->
-    <script type="module" src="src/main.js"></script>
-
-    <!-- add style that makes it so they can't scroll and scrollbars don't apepar -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       body {
         margin: 0;
         overflow: hidden;
       }
     </style>
-    
   </head>
   <body>
-    <!-- The canvas will be appended here by Pixi -->
+    <div id="app">
+        <div id="pixi-container"></div>
+    </div>
+    <script type="module" src="src/main.js"></script>
   </body>
 </html>
